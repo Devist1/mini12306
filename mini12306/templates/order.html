@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>MINI 12306 · 我的订单</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
+        body{background:linear-gradient(120deg,#f0f7ff,#f8fcff);min-height:100vh;padding:40px 20px;}
+        .title{text-align:center;font-size:24px;background:linear-gradient(90deg,#2A7FAA,#1B5A7A);-webkit-background-clip:text;color:transparent;font-weight:bold;margin-bottom:30px;}
+        .order-card{max-width:500px;margin:12px auto;background:white;border-radius:20px;padding:22px;box-shadow:0 4px 12px rgba(0,0,0,0.05);transition:0.3s;}
+        .order-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(42,127,170,0.15);}
+        .row{display:flex;justify-content:space-between;margin:6px 0;}
+        .label{color:#6F8FAB;font-size:14px;}
+        .value{color:#1E2F3F;font-weight:bold;}
+        .status{color:#2A7FAA;}
+        .btns{display:flex;gap:10px;margin-top:16px;}
+        button{flex:1;padding:10px;border-radius:14px;border:none;background:#eef5ff;color:#2A7FAA;cursor:pointer;}
+    </style>
+</head>
+<body>
+    <div class="title">我的订单</div>
+    <div id="orderList"></div>
+
+    <script>
+        const username = localStorage.getItem("loginUser");
+        fetch("/orders/"+username)
+        .then(res=>res.json())
+        .then(list=>{
+            let box = document.getElementById("orderList");
+            list.forEach(item=>{
+                let card = document.createElement("div");
+                card.className = "order-card";
+                card.innerHTML = `
+                <div class="row"><span class="label">车次</span><span class="value">${item[1]}</span></div>
+                <div class="row"><span class="label">座位</span><span class="value">${item[2]}</span></div>
+                <div class="row"><span class="label">状态</span><span class="value status">${item[3]}</span></div>
+                <div class="btns">
+                    <button onclick="refund(${item[0]})">退票</button>
+                    <button onclick="alert('改签请先退票再重新购票')">改签</button>
+                </div>`;
+                box.appendChild(card);
+            })
+        })
+
+        function refund(oid){
+            let form = new FormData();
+            form.append("order_id", oid);
+            fetch("/refund",{method:"POST",body:form})
+            .then(res=>res.text())
+            .then(msg=>{ alert(msg); location.reload(); })
+        }
+    </script>
+</body>
+</html>

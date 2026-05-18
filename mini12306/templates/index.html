@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>MINI 12306 · 轻旅行票务助手</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
+        body{
+            background:linear-gradient(135deg,#f0f7ff 0%,#eef5ff 100%);
+            min-height:100vh;
+            padding-bottom:60px;
+        }
+        .container{
+            max-width:920px;
+            margin:0 auto;
+            padding:0 20px;
+        }
+        .header{
+            text-align:center;
+            padding:50px 0 30px;
+        }
+        .title{
+            font-size:36px;
+            background:linear-gradient(90deg,#2A7FAA,#1B5A7A);
+            -webkit-background-clip:text;
+            color:transparent;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .subtitle{
+            font-size:15px;
+            color:#6F8FAB;
+        }
+        .search-card{
+            background:white;
+            border-radius:24px;
+            padding:32px;
+            box-shadow:0 10px 40px rgba(42,127,170,0.08);
+            margin-bottom:24px;
+        }
+        .search-box{
+            display:flex;
+            align-items:center;
+            gap:14px;
+            flex-wrap:wrap;
+        }
+        .input-item{
+            flex:1;
+            min-width:160px;
+            position:relative;
+        }
+        .input-item input{
+            width:100%;
+            padding:16px 16px 16px 44px;
+            border:1px solid #e4edf7;
+            border-radius:16px;
+            outline:none;
+            background:#fafbfc;
+            font-size:15px;
+            transition:0.3s;
+        }
+        .input-item input:focus{
+            border-color:#2A7FAA;
+            background:#fff;
+            box-shadow:0 0 0 4px rgba(42,127,170,0.1);
+        }
+        .input-item i{
+            position:absolute;
+            left:16px;
+            top:18px;
+            color:#888;
+            font-size:16px;
+        }
+        .swap{
+            width:46px;
+            height:46px;
+            border-radius:50%;
+            background:#edf5ff;
+            border:none;
+            color:#2A7FAA;
+            font-size:18px;
+            cursor:pointer;
+            transition:0.4s;
+        }
+        .swap:hover{
+            transform:rotate(180deg);
+            background:#dceaff;
+        }
+        .search-btn{
+            width:100%;
+            padding:18px;
+            border-radius:18px;
+            background:linear-gradient(90deg,#2A7FAA,#1B5A7A);
+            color:white;
+            border:none;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.2s;
+            margin-top:20px;
+        }
+        .search-btn:active{
+            transform:scale(0.98);
+        }
+        .filter-bar{
+            display:flex;
+            gap:12px;
+            margin-bottom:24px;
+            flex-wrap:wrap;
+        }
+        .filter-btn{
+            padding:12px 22px;
+            border-radius:16px;
+            border:none;
+            background:#f0f7ff;
+            color:#2A7FAA;
+            font-size:15px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .filter-btn.active{
+            background:#2A7FAA;
+            color:white;
+        }
+        .hot{
+            display:flex;
+            gap:10px;
+            margin-bottom:30px;
+            flex-wrap:wrap;
+        }
+        .tag{
+            padding:10px 16px;
+            background:#f7faff;
+            border-radius:18px;
+            font-size:14px;
+            color:#444;
+            cursor:pointer;
+            border:1px solid #e4edf7;
+            transition:0.2s;
+        }
+        .tag:hover{
+            background:#eef5ff;
+        }
+        .result{
+            margin-top:10px;
+        }
+        .result-head{
+            display:flex;
+            justify-content:space-between;
+            color:#333;
+            font-size:16px;
+            font-weight:bold;
+            margin-bottom:16px;
+        }
+        .train-card{
+            background:white;
+            border-radius:20px;
+            padding:24px;
+            margin-bottom:16px;
+            box-shadow:0 6px 20px rgba(0,0,0,0.05);
+            transition:0.3s;
+            border-left:4px solid #2A7FAA;
+        }
+        .train-card:hover{
+            transform:translateY(-4px);
+            box-shadow:0 12px 30px rgba(42,127,170,0.12);
+        }
+        .train-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:10px;
+        }
+        .type-gd{background:#1677ff;color:white;padding:5px 11px;border-radius:12px;font-size:13px;font-weight:bold;}
+        .type-dc{background:#4096ff;color:white;padding:5px 11px;border-radius:12px;font-size:13px;font-weight:bold;}
+        .type-pt{background:#8c8c8c;color:white;padding:5px 11px;border-radius:12px;font-size:13px;font-weight:bold;}
+        .type-plane{background:#fa8c16;color:white;padding:5px 11px;border-radius:12px;font-size:13px;font-weight:bold;}
+        .time{font-size:22px;font-weight:bold;color:#222;}
+        .station{font-size:14px;color:#666;margin-top:4px;}
+        .price{font-size:18px;color:#2A7FAA;font-weight:bold;margin-bottom:8px;}
+        .book{padding:10px 20px;background:#2A7FAA;color:white;border-radius:14px;border:none;font-weight:bold;cursor:pointer;transition:0.2s;}
+        .book:hover{background:#1f6a90;}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="title">MINI 12306</div>
+            <div class="subtitle">智能出行 · 便捷购票</div>
+        </div>
+
+        <div class="search-card">
+            <div class="search-box">
+                <div class="input-item">
+                    <i>🚩</i>
+                    <input id="startCity" type="text" value="北京南">
+                </div>
+                <button class="swap">⇄</button>
+                <div class="input-item">
+                    <i>📍</i>
+                    <input id="endCity" type="text" value="上海虹桥">
+                </div>
+                <div class="input-item"><i>📅</i><input type="text" value="4月28日 周一"></div>
+            </div>
+            <button class="search-btn" onclick="searchTrain()">查询车票</button>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterType('all')">全部</button>
+            <button class="filter-btn" onclick="filterType('高铁')">高铁</button>
+            <button class="filter-btn" onclick="filterType('普速火车')">火车</button>
+            <button class="filter-btn" onclick="filterType('飞机')">飞机</button>
+        </div>
+
+        <div class="hot">
+            <div class="tag" onclick="quickSearch('北京南','上海虹桥')">北京南→上海虹桥</div>
+            <div class="tag" onclick="quickSearch('北京西','广州南')">北京西→广州南</div>
+            <div class="tag" onclick="quickSearch('上海虹桥','深圳北')">上海虹桥→深圳北</div>
+        </div>
+
+        <div class="result">
+            <div class="result-head"><span>推荐车次</span><span>按时间排序</span></div>
+            <div id="trainList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentList = [];
+        let currentFilter = "all";
+
+        window.onload = function(){
+            searchTrain();
+        }
+
+        function quickSearch(start, end){
+            document.getElementById("startCity").value = start;
+            document.getElementById("endCity").value = end;
+            searchTrain();
+        }
+
+        function searchTrain(){
+            const start = document.getElementById("startCity").value;
+            const end = document.getElementById("endCity").value;
+
+            fetch(`/search_trains?start=${start}&end=${end}`)
+            .then(res=>res.json())
+            .then(list=>{
+                currentList = list;
+                renderList();
+            })
+        }
+
+        function filterType(type){
+            currentFilter = type;
+            let btns = document.querySelectorAll(".filter-btn");
+            btns.forEach(b=>b.classList.remove("active"));
+            event.target.classList.add("active");
+            renderList();
+        }
+
+        function renderList(){
+            const box = document.getElementById("trainList");
+            box.innerHTML = "";
+
+            let filtered = currentList;
+            if(currentFilter !== "all"){
+                filtered = currentList.filter(item => item[6] === currentFilter);
+            }
+
+            if(filtered.length === 0){
+                box.innerHTML = "<div style='text-align:center;padding:40px;color:#888;font-size:16px'>暂无匹配车次</div>";
+                return;
+            }
+
+            filtered.forEach(item=>{
+                let card = document.createElement("div");
+                card.className = "train-card";
+                let typeClass = "type-pt";
+                if(item[6] === "高铁") typeClass = "type-gd";
+                if(item[6] === "动车") typeClass = "type-dc";
+                if(item[6] === "飞机") typeClass = "type-plane";
+
+                card.innerHTML = `
+                <div class="train-row">
+                    <div class="train-left"><span class="${typeClass}">${item[6]} ${item[0]}</span></div>
+                    <div style="text-align:center">
+                        <div class="time">${item[3]}</div>
+                        <div class="station">${item[1]}</div>
+                    </div>
+                    <div style="font-size:20px;color:#666">→</div>
+                    <div style="text-align:center">
+                        <div class="time">12:30</div>
+                        <div class="station">${item[2]}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="price">¥${item[4]}</div>
+                        <button class="book" onclick="location.href='/buy_page?train=${item[0]}&user=admin'">预订</button>
+                    </div>
+                </div>`;
+                box.appendChild(card);
+            })
+        }
+    </script>
+</body>
+</html>
