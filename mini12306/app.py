@@ -8,15 +8,25 @@ DB_PATH = "data.db"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # 用户表
+
+    # 用户表（保持不变）
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (username TEXT PRIMARY KEY, password TEXT, idcard TEXT, phone TEXT, role TEXT)''')
+
     # 车次表：新增 type 区分 高铁/动车/普速火车/飞机
     c.execute('''CREATE TABLE IF NOT EXISTS trains
                  (train_no TEXT PRIMARY KEY, start TEXT, end TEXT, time TEXT, price REAL, tickets INTEGER, type TEXT)''')
-    # 订单表
+
+    # 订单表（关键修复：增加 price 和 is_student 字段）
     c.execute('''CREATE TABLE IF NOT EXISTS orders
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, train_no TEXT, seat TEXT, status TEXT)''')
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  username TEXT,
+                  train_no TEXT,
+                  seat TEXT,
+                  status TEXT,
+                  price REAL,
+                  is_student TEXT)''')
+
     # 预设管理员账号
     c.execute("INSERT OR IGNORE INTO users VALUES ('admin','123','111111','13800000000','admin')")
 
@@ -101,6 +111,10 @@ def buy_page():
 def order_page():
     return render_template("order.html")
 
+@app.route("/register")
+def register_page():
+    return render_template("register.html")
+
 # 业务接口
 @app.route("/get_trains")
 def get_trains():
@@ -122,47 +136,41 @@ def search_trains():
     res = cur.fetchall()
     conn.close()
     return jsonify(res)
-# 购票
+
+# 购票（支持学生票 + 自动按车型计算折扣，席别模式）
 @app.route("/buy", methods=["POST"])
 def buy():
     username = request.form["username"]
     train_no = request.form["train_no"]
     seat = request.form["seat"]
-
-    def check_seat(seat):
-        num = ""
-        char = ""
-        for c in seat.upper():
-            if c.isdigit(): num += c
-            else: char += c
-        if not num.isdigit() or len(char) != 1: return False
-        row = int(num)
-        return 1 <= row <= 17 and char in "ABCDF"
-
-    if not check_seat(seat): return "座位号输入错误"
+    is_student = request.form.get("is_student", "n")
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("SELECT tickets FROM trains WHERE train_no=?", (train_no,))
-    tickets = cur.fetchone()[0]
+    cur.execute("SELECT tickets, price, type FROM trains WHERE train_no=?", (train_no,))
+    tickets, price, train_type = cur.fetchone()
+
     if tickets <= 0:
         conn.close()
         return "余票不足"
+
+    final_price = price
+    # 严格遵循12306学生票规则：仅二等座、硬座打折
+    if is_student == "y":
+        if (train_type in ("高铁", "动车")) and seat == "二等座":
+            final_price = price * 0.75
+        elif train_type == "普速火车" and seat == "硬座":
+            final_price = price * 0.5
+
+    # 更新余票 + 插入订单
     cur.execute("UPDATE trains SET tickets = tickets - 1 WHERE train_no=?", (train_no,))
-    cur.execute("INSERT INTO orders (username,train_no,seat,status) VALUES (?,?,?,'已购票')",(username,train_no,seat))
+    cur.execute(
+        "INSERT INTO orders (username,train_no,seat,status,price,is_student) VALUES (?,?,?,'已购票',?,?)",
+        (username, train_no, seat, final_price, is_student)
+    )
     conn.commit()
     conn.close()
-    return "购票成功"
-
-# 查订单
-@app.route("/orders/<username>")
-def get_orders(username):
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("SELECT id,train_no,seat,status FROM orders WHERE username=?", (username,))
-    res = cur.fetchall()
-    conn.close()
-    return jsonify(res)
+    return f"购票成功！{'学生票' if is_student=='y' else '成人票'}，{seat}票价：{final_price:.2f}元"
 
 # 退票（修复订单ID问题）
 @app.route("/refund", methods=["POST"])
@@ -177,6 +185,38 @@ def refund():
     conn.commit()
     conn.close()
     return "退票成功"
+
+@app.route("/train_info")
+def get_train_info():
+    train_no = request.args.get("train_no")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT start, end, time FROM trains WHERE train_no=?", (train_no,))
+    train = cur.fetchone()
+    conn.close()
+    if train:
+        return jsonify({
+            "start": train[0],
+            "end": train[1],
+            "time": train[2]
+        })
+    else:
+        return jsonify({"error": "车次不存在"}), 404
+
+# 查询当前用户所有订单
+@app.route("/orders/<username>")
+def get_user_orders(username):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    # 查询订单全字段：id, train_no, seat, status, price, is_student
+    cur.execute("""
+        SELECT id, train_no, seat, status, price, is_student
+        FROM orders
+        WHERE username = ?
+    """, (username,))
+    order_list = cur.fetchall()
+    conn.close()
+    return jsonify(order_list)
 
 if __name__ == "__main__":
     init_db()

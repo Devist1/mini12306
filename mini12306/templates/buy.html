@@ -2,61 +2,184 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>MINI 12306 · 车票预订</title>
+    <title>车票预订 - MINI12306</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
-        body{background:linear-gradient(120deg,#f0f7ff,#f8fcff);height:100vh;display:flex;align-items:center;justify-content:center;}
-        .card{width:380px;background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);border-radius:24px;padding:40px 30px;box-shadow:0 8px 30px rgba(42,127,170,0.1);}
-        .title{font-size:22px;background:linear-gradient(90deg,#2A7FAA,#1B5A7A);-webkit-background-clip:text;color:transparent;font-weight:bold;margin-bottom:20px;text-align:center;}
-        input{width:100%;padding:14px 16px;border-radius:16px;border:1px solid #dbe4f0;margin:10px 0;outline:none;transition:0.3s;}
-        input:focus{border-color:#2A7FAA;box-shadow:0 0 0 3px rgba(42,127,170,0.15);}
-        button{width:100%;padding:15px;border-radius:18px;background:linear-gradient(90deg,#2A7FAA,#1B5A7A);color:white;border:none;margin:8px 0;font-size:15px;cursor:pointer;transition:0.2s;}
-        button:active{transform:scale(0.98);}
-        #tip{margin:12px 0;text-align:center;font-size:15px;color:#2A7FAA;}
+        body {
+            font-family: Microsoft YaHei;
+            background: linear-gradient(135deg, #f0f7ff, #f8fcff);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+        }
+        .title {
+            font-size: 24px;
+            color: #2A7FAA;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .item {
+            margin-bottom: 18px;
+        }
+        .item input, .item select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+        }
+        .student-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .price-info {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2A7FAA;
+            margin: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #2A7FAA;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="box">
         <div class="title">车票预订</div>
-        <p style="text-align:center;margin-bottom:10px">车次：<span id="tno"></span></p>
-        <input id="seat" placeholder="请输入座位号（如 12F）">
-        <button onclick="checkSeat()">校验座位</button>
-        <div id="tip"></div>
-        <button onclick="submitBuy()">确认购票</button>
+        <form id="buyForm">
+            <div class="item">
+                <label>车次</label>
+                <input type="text" id="train_no" name="train_no" readonly>
+            </div>
+            <div class="item">
+                <label>席别</label>
+                <select id="seat_type" name="seat" required>
+                    <!-- 席别会由JS动态生成 -->
+                </select>
+            </div>
+
+            <!-- 学生票选项 -->
+            <div class="student-row">
+                <input type="checkbox" name="is_student" value="y" id="student">
+                <label for="student">学生票（按12306规则自动打折）</label>
+            </div>
+
+            <!-- 实时价格 -->
+            <div class="price-info">
+                票价：<span id="showPrice">0</span> 元
+            </div>
+
+            <input type="hidden" name="username" value="admin">
+            <button type="submit">确认购票</button>
+        </form>
     </div>
 
     <script>
-        const url = new URL(location.href);
-        const trainNo = url.searchParams.get("train") || "G100";
-        document.getElementById("tno").innerText = trainNo;
-        const username = localStorage.getItem("loginUser");
+        const params = new URLSearchParams(location.search);
+        const train = params.get("train");
+        document.getElementById("train_no").value = train;
 
-        function checkSeat(){
-            let s = document.getElementById("seat").value.trim().toUpperCase();
-            let num = "", char = "";
-            for(let c of s){ if(!isNaN(c)) num+=c; else char+=c; }
-            let row = parseInt(num);
-            let t = document.getElementById("tip");
-            if(!num||!char||row<1||row>17||!"ABCDF".includes(char)){ t.innerText="输入错误"; t.style.color="red"; return; }
-            if("AF".includes(char)) t.innerText="座位类型：窗口";
-            else if("CD".includes(char)) t.innerText="座位类型：过道";
-            else if(char==="B") t.innerText="座位类型：中间";
-            t.style.color="#2A7FAA";
+        // 加载车次原价 + 类型
+        let trainType = "";
+        let originPrice = 0;
+        let seatTypeToDiscount = {};
+
+        // 定义不同车次类型的席别和对应折扣
+        const seatConfig = {
+            "高铁": [
+                { name: "二等座", discount: 1.0 },
+                { name: "一等座", discount: 1.2 },
+                { name: "商务座", discount: 2.5 }
+            ],
+            "动车": [
+                { name: "二等座", discount: 1.0 },
+                { name: "一等座", discount: 1.2 }
+            ],
+            "普速火车": [
+                { name: "硬座", discount: 1.0 },
+                { name: "硬卧", discount: 1.0 },
+                { name: "软卧", discount: 1.0 }
+            ],
+            "飞机": [
+                { name: "经济舱", discount: 1.0 },
+                { name: "商务舱", discount: 2.0 }
+            ]
+        };
+
+        fetch("/get_trains")
+            .then(r => r.json())
+            .then(list => {
+                const item = list.find(x => x[0] === train);
+                originPrice = item[4];
+                trainType = item[6];
+
+                // 根据车次类型动态生成席别下拉选项
+                const seatTypes = seatConfig[trainType] || [];
+                const seatSelect = document.getElementById("seat_type");
+                seatSelect.innerHTML = "";
+                seatTypeToDiscount = {}; // 重置折扣映射
+
+                seatTypes.forEach(seat => {
+                    const opt = document.createElement("option");
+                    opt.value = seat.name;
+                    opt.textContent = seat.name;
+                    seatSelect.appendChild(opt);
+                    seatTypeToDiscount[seat.name] = seat.discount;
+                });
+
+                // 生成后立即更新价格
+                updatePrice();
+            })
+
+        // 监听席别和学生票变化，实时更新价格
+        document.querySelector("#student").addEventListener("change", updatePrice);
+        document.querySelector("#seat_type").addEventListener("change", updatePrice);
+
+        function updatePrice() {
+            const isStudent = document.querySelector("#student").checked;
+            const seatType = document.getElementById("seat_type").value;
+            const seatDiscount = seatTypeToDiscount[seatType] || 1.0;
+            let final = originPrice * seatDiscount;
+
+            // 学生票折扣逻辑（只对指定席别生效）
+            if (isStudent) {
+                if ((trainType === "高铁" || trainType === "动车") && seatType === "二等座") {
+                    final = originPrice * 0.75;
+                } else if (trainType === "普速火车" && seatType === "硬座") {
+                    final = originPrice * 0.5;
+                }
+                // 硬卧、软卧、一等座、商务座不参与学生票折扣
+            }
+
+            document.getElementById("showPrice").innerText = final.toFixed(2);
         }
 
-        function submitBuy(){
-            checkSeat();
-            if(document.getElementById("tip").innerText.includes("错误")){ alert("座位不合法"); return; }
-            let seat = document.getElementById("seat").value;
-            let form = new FormData();
-            form.append("username", username);
-            form.append("train_no", trainNo);
-            form.append("seat", seat);
-            fetch("/buy",{method:"POST",body:form})
-            .then(res=>res.text())
-            .then(msg=>{ alert(msg); if(msg==="购票成功") location.href="/order_page"; })
-        }
+        // 提交
+        document.getElementById("buyForm").addEventListener("submit", async e => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const r = await fetch("/buy", { method: "POST", body: fd });
+            const txt = await r.text();
+            alert(txt);
+            if (txt.includes("成功")) location.href = "/order_page";
+        })
     </script>
 </body>
 </html>

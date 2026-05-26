@@ -2,53 +2,326 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>MINI 12306 · 我的订单</title>
+    <title>我的订单 - MINI 12306</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
-        body{background:linear-gradient(120deg,#f0f7ff,#f8fcff);min-height:100vh;padding:40px 20px;}
-        .title{text-align:center;font-size:24px;background:linear-gradient(90deg,#2A7FAA,#1B5A7A);-webkit-background-clip:text;color:transparent;font-weight:bold;margin-bottom:30px;}
-        .order-card{max-width:500px;margin:12px auto;background:white;border-radius:20px;padding:22px;box-shadow:0 4px 12px rgba(0,0,0,0.05);transition:0.3s;}
-        .order-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(42,127,170,0.15);}
-        .row{display:flex;justify-content:space-between;margin:6px 0;}
-        .label{color:#6F8FAB;font-size:14px;}
-        .value{color:#1E2F3F;font-weight:bold;}
-        .status{color:#2A7FAA;}
-        .btns{display:flex;gap:10px;margin-top:16px;}
-        button{flex:1;padding:10px;border-radius:14px;border:none;background:#eef5ff;color:#2A7FAA;cursor:pointer;}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f0f7ff;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 220px;
+            background: white;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.05);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 0 20px 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2A7FAA, #1B5A7A);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+        }
+
+        .username {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .nav-menu {
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            padding: 15px 30px;
+            color: #666;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: #f7faff;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            padding: 15px 30px;
+            color: #666;
+            font-size: 15px;
+            cursor: pointer;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .logout-btn:hover {
+            color: #ff4d4f;
+        }
+
+        /* 右侧主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: #2A7FAA;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* 订单列表 */
+        .order-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .train-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .train-no {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .student-tag {
+            font-size: 14px;
+            color: #ff9800;
+        }
+
+        .order-status {
+            font-size: 14px;
+            color: #2A7FAA;
+            font-weight: bold;
+        }
+
+        .order-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .station-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .depart-info, .arrive-info {
+            text-align: center;
+        }
+
+        .time {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .station {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .arrow {
+            font-size: 20px;
+            color: #ccc;
+        }
+
+        .seat-price-info {
+            text-align: right;
+        }
+
+        .seat-type {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .price {
+            font-size: 18px;
+            color: #2A7FAA;
+            font-weight: bold;
+        }
+
+        .refund-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .refund-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
-    <div class="title">我的订单</div>
-    <div id="orderList"></div>
+    <div class="app-container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="username">admin</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" onclick="location.href='/index'">
+                    🎫 车票预订
+                </div>
+                <div class="nav-item active">
+                    📋 我的订单
+                </div>
+            </div>
+            <div class="logout-btn" onclick="location.href='/'">退出登录</div>
+        </div>
+
+        <!-- 右侧主内容区 -->
+        <div class="main-content">
+            <div class="page-title">我的订单</div>
+            <div class="order-list" id="orderList"></div>
+        </div>
+    </div>
 
     <script>
-        const username = localStorage.getItem("loginUser");
-        fetch("/orders/"+username)
-        .then(res=>res.json())
-        .then(list=>{
-            let box = document.getElementById("orderList");
-            list.forEach(item=>{
-                let card = document.createElement("div");
-                card.className = "order-card";
-                card.innerHTML = `
-                <div class="row"><span class="label">车次</span><span class="value">${item[1]}</span></div>
-                <div class="row"><span class="label">座位</span><span class="value">${item[2]}</span></div>
-                <div class="row"><span class="label">状态</span><span class="value status">${item[3]}</span></div>
-                <div class="btns">
-                    <button onclick="refund(${item[0]})">退票</button>
-                    <button onclick="alert('改签请先退票再重新购票')">改签</button>
-                </div>`;
-                box.appendChild(card);
-            })
-        })
+        // 加载订单
+        function loadOrders() {
+            fetch("/orders/admin")
+            .then(res => res.json())
+            .then(list => {
+                const box = document.getElementById("orderList");
+                if (list.length === 0) {
+                    box.innerHTML = "<div style='text-align:center;padding:40px;color:#888'>暂无订单</div>";
+                    return;
+                }
+                box.innerHTML = "";
+                list.forEach(order => {
+                    const card = document.createElement("div");
+                    card.className = "order-card";
+                    // 解构订单数据
+                    const [id, trainNo, seat, status, price, isStudent] = order;
 
-        function refund(oid){
-            let form = new FormData();
-            form.append("order_id", oid);
-            fetch("/refund",{method:"POST",body:form})
-            .then(res=>res.text())
-            .then(msg=>{ alert(msg); location.reload(); })
+                    // 获取车次信息（出发/到达站、时间）
+                    fetch(`/train_info?train_no=${trainNo}`)
+                    .then(res => res.json())
+                    .then(train => {
+                        const startStation = train.start;
+                        const endStation = train.end;
+                        const startTime = train.time;
+                        const arriveTime = "12:30"; // 和购票页一致的到达时间
+
+                        // 渲染订单卡片
+                        card.innerHTML = `
+                            <div class="order-header">
+                                <div class="train-info">
+                                    <span class="train-no">${trainNo}</span>
+                                    ${isStudent === 'y' ? '<span class="student-tag">学生票</span>' : ''}
+                                </div>
+                                <span class="order-status">${status}</span>
+                            </div>
+                            <div class="order-details">
+                                <div class="station-info">
+                                    <div class="depart-info">
+                                        <div class="time">${startTime}</div>
+                                        <div class="station">${startStation}</div>
+                                    </div>
+                                    <div class="arrow">→</div>
+                                    <div class="arrive-info">
+                                        <div class="time">${arriveTime}</div>
+                                        <div class="station">${endStation}</div>
+                                    </div>
+                                </div>
+                                <div class="seat-price-info">
+                                    <div class="seat-type">${seat}</div>
+                                    <div class="price">¥${price.toFixed(2)}</div>
+                                    <button class="refund-btn" onclick="refundOrder(${id})" ${status === '已退票' ? 'disabled' : ''}>退票</button>
+                                </div>
+                            </div>
+                        `;
+                        box.appendChild(card);
+                    });
+                });
+            });
+        }
+
+        // 退票操作
+        function refundOrder(orderId) {
+            if (!confirm("确定要退票吗？")) return;
+            fetch("/refund", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `order_id=${orderId}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                // 刷新订单列表
+                loadOrders();
+            });
+        }
+
+        // 页面加载时获取订单
+        window.onload = function(){
+            loadOrders();
         }
     </script>
 </body>
