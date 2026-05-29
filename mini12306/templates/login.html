@@ -5,240 +5,76 @@
     <title>MINI 12306 - 用户登录</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", system-ui, sans-serif;
-        }
-
-        body {
-            background-color: #f0f7ff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        /* 整体容器：左右分栏 */
-        .login-wrapper {
-            display: flex;
-            background: #ffffff;
-            width: 100%;
-            max-width: 1000px;
-            border-radius: 28px;
-            box-shadow: 0 16px 48px rgba(30, 90, 130, 0.12),
-                        0 6px 16px rgba(30, 90, 130, 0.06);
-            overflow: hidden;
-        }
-
-        /* 左侧信息栏 */
-        .info-side {
-            width: 45%;
-            background: linear-gradient(135deg, #2A7FAA 0%, #1B5A7A 100%);
-            color: white;
-            padding: 60px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .info-side .welcome-title {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .info-side .welcome-sub {
-            font-size: 16px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            opacity: 0.95;
-        }
-
-        .info-side .tips-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-side .tips-list {
-            list-style: none;
-            line-height: 1.7;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .info-side .tips-list li {
-            margin-bottom: 10px;
-            padding-left: 18px;
-            position: relative;
-        }
-
-        .info-side .tips-list li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        /* 右侧登录表单 */
-        .form-side {
-            width: 55%;
-            padding: 60px 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .form-side .logo-title {
-            font-size: 32px;
-            color: #2A7FAA;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .form-side .logo-desc {
-            font-size: 15px;
-            color: #748c9c;
-            text-align: center;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-        }
-
-        .input-group {
-            margin-bottom: 22px;
-        }
-
-        .input-group input {
-            width: 100%;
-            height: 54px;
-            padding: 0 20px;
-            border: 1px solid #dde7f3;
-            border-radius: 16px;
-            background-color: #f7faff;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: #2A7FAA;
-            background-color: #fff;
-            box-shadow: 0 0 0 4px rgba(42, 127, 170, 0.1);
-        }
-
-        .login-btn {
-            width: 100%;
-            height: 54px;
-            border-radius: 16px;
-            background: linear-gradient(90deg, #2A7FAA, #1B5A7A);
-            color: #fff;
-            border: none;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-            margin-bottom: 28px;
-            transition: transform 0.2s ease;
-        }
-
-        .login-btn:active {
-            transform: scale(0.97);
-        }
-
-        .register-tip {
-            font-size: 14px;
-            color: #748c9c;
-            text-align: center;
-        }
-
-        .register-tip a {
-            color: #2A7FAA;
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 6px;
-        }
-
-        /* 响应式适配 */
-        @media (max-width: 768px) {
-            .login-wrapper {
-                flex-direction: column;
-            }
-            .info-side, .form-side {
-                width: 100%;
-                padding: 40px 30px;
-            }
-            .info-side {
-                order: 2;
-            }
-            .form-side {
-                order: 1;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", system-ui, sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-wrapper { display: flex; background: #fff; width: 100%; max-width: 1000px; border-radius: 28px; box-shadow: 0 16px 48px rgba(30,90,130,0.12); overflow: hidden; }
+        .info-side { width: 45%; background: linear-gradient(135deg, #2A7FAA 0%, #1B5A7A 100%); color: white; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; }
+        .info-side .welcome-title { font-size: 30px; font-weight: 700; margin-bottom: 20px; }
+        .info-side .welcome-sub { font-size: 16px; line-height: 1.8; margin-bottom: 30px; opacity: 0.95; }
+        .info-side .tips-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .info-side .tips-list { list-style: none; line-height: 1.7; font-size: 14px; opacity: 0.9; }
+        .info-side .tips-list li { margin-bottom: 10px; padding-left: 18px; position: relative; }
+        .info-side .tips-list li::before { content: "•"; position: absolute; left: 0; color: #fff; font-weight: bold; }
+        .form-side { width: 55%; padding: 60px 50px; display: flex; flex-direction: column; justify-content: center; }
+        .form-side .logo-title { font-size: 32px; color: #2A7FAA; font-weight: 700; text-align: center; margin-bottom: 10px; }
+        .form-side .logo-desc { font-size: 15px; color: #748c9c; text-align: center; margin-bottom: 40px; }
+        .input-group { margin-bottom: 22px; }
+        .input-group input { width: 100%; height: 54px; padding: 0 20px; border: 1px solid #dde7f3; border-radius: 16px; background-color: #f7faff; font-size: 16px; outline: none; }
+        .input-group input:focus { border-color: #2A7FAA; background-color: #fff; box-shadow: 0 0 0 4px rgba(42,127,170,0.1); }
+        .login-btn { width: 100%; height: 54px; border-radius: 16px; background: linear-gradient(90deg, #2A7FAA, #1B5A7A); color: #fff; border: none; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 8px; margin-bottom: 28px; }
+        .login-btn:active { transform: scale(0.97); }
+        .tips-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #748c9c; }
+        .tips-row a { color: #2A7FAA; text-decoration: none; font-weight: 500; }
+        .admin-hint { text-align: center; margin-top: 10px; font-size: 13px; color: #aaa; }
+        @media (max-width: 768px) { .login-wrapper { flex-direction: column; } .info-side, .form-side { width: 100%; padding: 40px 30px; } }
     </style>
 </head>
 <body>
     <div class="login-wrapper">
-        <!-- 左侧信息栏 -->
         <div class="info-side">
             <h2 class="welcome-title">欢迎使用 MINI 12306</h2>
-            <p class="welcome-sub">
-                安全、便捷、高效的一站式出行票务服务平台，为您提供高铁、动车、普速列车及飞机票预订服务，助力您的每一次安心出行。
-            </p>
-            <div class="tips-title">
-                <span>⚠️</span> 登录与购票须知
-            </div>
+            <p class="welcome-sub">安全、便捷、高效的一站式出行票务服务平台，提供高铁、动车、普速列车及飞机票预订服务。</p>
+            <div class="tips-title"><span>⚠️</span> 登录与购票须知</div>
             <ul class="tips-list">
-                <li>请使用本人有效手机号注册并登录，确保信息真实准确。</li>
-                <li>学生票需凭有效学生证购买，仅支持二等座/硬座等指定席别，按官方规则享受折扣。</li>
-                <li>请妥善保管您的账号密码，切勿向他人透露，谨防诈骗。</li>
-                <li>车票预订后请按时乘车，如需退票请在发车前办理，按规定收取手续费。</li>
-                <li>如遇系统问题，请联系管理员协助处理。</li>
+                <li>请使用本人有效手机号注册并登录</li>
+                <li>学生票凭有效学生证购买，仅支持二等座/硬座按官方规则打折</li>
+                <li>密码连续输错3次将锁定账号5分钟</li>
+                <li>未支付订单10分钟自动取消</li>
+                <li>退票手续费：发车前24h内10%，24-48h内5%，48h以上免费</li>
             </ul>
         </div>
-
-        <!-- 右侧登录表单 -->
         <div class="form-side">
             <h1 class="logo-title">MINI 12306</h1>
             <p class="logo-desc">智能出行 · 便捷购票 · 安全可靠</p>
-
             <form id="loginForm">
                 <div class="input-group">
                     <input type="text" name="username" placeholder="请输入账号" value="admin">
                 </div>
                 <div class="input-group">
-                    <input type="password" name="password" placeholder="请输入密码" value="123">
+                    <input type="password" name="password" placeholder="请输入密码" value="Admin123">
                 </div>
-
                 <button type="submit" class="login-btn">立即登录</button>
             </form>
-
-            <div class="register-tip">
+            <div class="tips-row">
                 <a href="/register">快速注册</a>
+                <a href="/reset_password">忘记密码？</a>
             </div>
+            <div class="admin-hint">默认管理员: admin / Admin123 | 测试用户: testuser / User1234</div>
         </div>
     </div>
-
     <script>
         document.getElementById("loginForm").addEventListener("submit", async function(e){
             e.preventDefault();
             const formData = new FormData(this);
-            const res = await fetch("/check_login", {
-                method:"POST",
-                body:formData
-            });
+            const res = await fetch("/check_login", { method:"POST", body:formData });
             const text = await res.text();
             if(text.startsWith("success")){
+                const parts = text.split("|");
+                sessionStorage.setItem("username", parts[1]);
+                sessionStorage.setItem("role", parts[2]);
                 location.href = "/index";
-            }else{
-                alert("账号或密码错误，请重新输入");
+            } else {
+                alert(text.replace("fail|",""));
             }
         })
     </script>

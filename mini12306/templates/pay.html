@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>模拟支付 - MINI12306</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Microsoft YaHei; background: linear-gradient(135deg, #f0f7ff, #f8fcff); padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
+        .box { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 480px; text-align: center; }
+        .title { font-size: 24px; color: #2A7FAA; margin-bottom: 25px; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+        .info-label { color: #888; }
+        .info-value { color: #333; font-weight: 500; }
+        .total { font-size: 24px; color: #ff4d4f; font-weight: bold; margin: 20px 0; }
+        .pay-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, #ff9800, #f57c00); color: white; border: none; border-radius: 14px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .pay-btn:active { transform: scale(0.97); }
+        .pay-btn:disabled { background: #ccc; cursor: wait; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; display: none; }
+        .result.success { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; display: block; }
+        .result.fail { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; display: block; }
+        .result.timeout { background: #fffbe6; color: #fa8c16; border: 1px solid #ffe58f; display: block; }
+        .links { margin-top: 20px; }
+        .links a { color: #2A7FAA; text-decoration: none; margin: 0 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="title">💳 模拟在线支付</div>
+        <div class="info-row">
+            <span class="info-label">订单号</span>
+            <span class="info-value" id="orderNo">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">支付方式</span>
+            <span class="info-value">模拟支付</span>
+        </div>
+        <div class="total">
+            需支付：¥<span id="price">0</span>
+        </div>
+        <p style="color:#888;font-size:13px;margin-bottom:15px;">
+            成功率 80% | 失败率 15% | 超时率 5%<br>
+            未支付订单 10 分钟后自动取消
+        </p>
+        <button class="pay-btn" id="payBtn" onclick="doPay()">确认支付</button>
+        <div class="result" id="result"></div>
+        <div class="links">
+            <a href="/order_page">查看订单</a>
+            <a href="/index">返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(location.search);
+        const orderNo = params.get("order_no") || "-";
+        const price = params.get("price") || "0";
+        document.getElementById("orderNo").innerText = orderNo;
+        document.getElementById("price").innerText = parseFloat(price).toFixed(2);
+
+        async function doPay() {
+            const btn = document.getElementById("payBtn");
+            btn.disabled = true;
+            btn.innerText = "支付处理中...";
+
+            const fd = new FormData();
+            fd.append("order_no", orderNo);
+
+            try {
+                const res = await fetch("/pay", { method: "POST", body: fd });
+                const text = await res.text();
+                const resultDiv = document.getElementById("result");
+
+                resultDiv.className = "result";
+                if(text === "支付成功") {
+                    resultDiv.classList.add("success");
+                    resultDiv.innerText = "✅ 支付成功！车票已出票";
+                    btn.style.display = "none";
+                } else if(text === "支付失败") {
+                    resultDiv.classList.add("fail");
+                    resultDiv.innerText = "❌ 支付失败，请重试";
+                    btn.disabled = false;
+                    btn.innerText = "重新支付";
+                } else if(text === "支付超时") {
+                    resultDiv.classList.add("timeout");
+                    resultDiv.innerText = "⏱️ 支付超时，请重试";
+                    btn.disabled = false;
+                    btn.innerText = "重新支付";
+                } else {
+                    resultDiv.classList.add("fail");
+                    resultDiv.innerText = text;
+                    btn.disabled = false;
+                    btn.innerText = "重新支付";
+                }
+            } catch(e) {
+                btn.disabled = false;
+                btn.innerText = "确认支付";
+                alert("网络错误，请重试");
+            }
+        }
+    </script>
+</body>
+</html>

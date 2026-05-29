@@ -5,324 +5,149 @@
     <title>我的订单 - MINI 12306</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-
-        body {
-            background-color: #f0f7ff;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* 左侧导航栏 */
-        .sidebar {
-            width: 220px;
-            background: white;
-            box-shadow: 4px 0 12px rgba(0,0,0,0.05);
-            padding: 30px 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-info {
-            text-align: center;
-            padding: 0 20px 30px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2A7FAA, #1B5A7A);
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-        }
-
-        .username {
-            font-size: 16px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .nav-menu {
-            margin-top: 20px;
-        }
-
-        .nav-item {
-            padding: 15px 30px;
-            color: #666;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-item:hover {
-            background: #f7faff;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            padding: 15px 30px;
-            color: #666;
-            font-size: 15px;
-            cursor: pointer;
-            text-align: center;
-            border-top: 1px solid #eee;
-        }
-
-        .logout-btn:hover {
-            color: #ff4d4f;
-        }
-
-        /* 右侧主内容区 */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            color: #2A7FAA;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        /* 订单列表 */
-        .order-list {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .order-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .train-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .train-no {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .student-tag {
-            font-size: 14px;
-            color: #ff9800;
-        }
-
-        .order-status {
-            font-size: 14px;
-            color: #2A7FAA;
-            font-weight: bold;
-        }
-
-        .order-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .station-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .depart-info, .arrive-info {
-            text-align: center;
-        }
-
-        .time {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .station {
-            font-size: 14px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .arrow {
-            font-size: 20px;
-            color: #ccc;
-        }
-
-        .seat-price-info {
-            text-align: right;
-        }
-
-        .seat-type {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .price {
-            font-size: 18px;
-            color: #2A7FAA;
-            font-weight: bold;
-        }
-
-        .refund-btn {
-            margin-top: 10px;
-            padding: 6px 12px;
-            background: #ff4d4f;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .refund-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: white; box-shadow: 4px 0 12px rgba(0,0,0,0.05); padding: 30px 0; display: flex; flex-direction: column; }
+        .user-info { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid #eee; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2A7FAA, #1B5A7A); color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .username { font-size: 16px; color: #333; font-weight: 600; }
+        .nav-menu { margin-top: 20px; }
+        .nav-item { padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: #f7faff; }
+        .nav-item.active { background: #eef5ff; color: #2A7FAA; border-right: 3px solid #2A7FAA; }
+        .main-content { flex: 1; padding: 30px; }
+        .page-title { font-size: 24px; color: #2A7FAA; margin-bottom: 8px; text-align: center; }
+        .ticket-count { text-align: center; color: #888; font-size: 14px; margin-bottom: 20px; }
+        .order-list { max-width: 850px; margin: 0 auto; }
+        .order-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .order-card.gray { opacity: 0.5; background: #f5f5f5; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .train-no { font-size: 16px; font-weight: bold; color: #333; }
+        .student-tag { font-size: 13px; color: #ff9800; }
+        .order-status { font-size: 14px; font-weight: bold; }
+        .status-paid { color: #52c41a; } .status-unpaid { color: #fa8c16; } .status-gray { color: #999; }
+        .order-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .station-info { display: flex; align-items: center; gap: 15px; }
+        .depart-info, .arrive-info { text-align: center; }
+        .time { font-size: 18px; font-weight: bold; color: #333; }
+        .station { font-size: 14px; color: #666; margin-top: 4px; }
+        .arrow { font-size: 20px; color: #ccc; }
+        .seat-price-info { text-align: right; }
+        .seat-type { font-size: 14px; color: #666; margin-bottom: 4px; }
+        .price { font-size: 18px; color: #2A7FAA; font-weight: bold; }
+        .action-btn { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 8px; margin-left: 4px; color: white; }
+        .btn-refund { background: #ff4d4f; }
+        .btn-cancel { background: #999; }
+        .btn-pay { background: #2A7FAA; }
+        .btn-reschedule { background: #52c41a; }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .order-no { font-size: 11px; color: #aaa; margin-top: 8px; }
+        .orig-info { font-size: 12px; color: #fa8c16; margin-top: 5px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; display: inline-block; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- 左侧导航栏 -->
         <div class="sidebar">
             <div class="user-info">
                 <div class="avatar">👤</div>
-                <div class="username">admin</div>
+                <div class="username" id="sidebarUser">用户</div>
             </div>
             <div class="nav-menu">
-                <div class="nav-item" onclick="location.href='/index'">
-                    🎫 车票预订
-                </div>
-                <div class="nav-item active">
-                    📋 我的订单
-                </div>
+                <div class="nav-item" id="adminNav" style="display:none;" onclick="location.href='/admin_page'">⚙️ 系统管理</div>
+                <div class="nav-item" onclick="location.href='/index'">🎫 车票预订</div>
+                <div class="nav-item active">📋 我的订单</div>
+                <div class="nav-item" onclick="location.href='/personal_page'">👤 个人中心</div>
             </div>
-            <div class="logout-btn" onclick="location.href='/'">退出登录</div>
         </div>
-
-        <!-- 右侧主内容区 -->
         <div class="main-content">
             <div class="page-title">我的订单</div>
+            <div class="ticket-count" id="ticketCount"></div>
             <div class="order-list" id="orderList"></div>
         </div>
     </div>
-
     <script>
-        // 加载订单
-        function loadOrders() {
-            fetch("/orders/admin")
-            .then(res => res.json())
-            .then(list => {
-                const box = document.getElementById("orderList");
-                if (list.length === 0) {
-                    box.innerHTML = "<div style='text-align:center;padding:40px;color:#888'>暂无订单</div>";
-                    return;
+        var username = sessionStorage.getItem("username") || "user";
+        var role = sessionStorage.getItem("role") || "user";
+        document.getElementById("sidebarUser").innerText = username;
+        if(role === "admin") { document.getElementById("adminNav").style.display = "flex"; }
+
+        async function loadCount() {
+            var res = await fetch('/order_count/' + username);
+            var data = await res.json();
+            document.getElementById("ticketCount").innerText = '有效票 ' + data.active + ' 张';
+        }
+
+        async function loadOrders() {
+            var res = await fetch('/orders/' + username);
+            var orders = await res.json();
+            var box = document.getElementById("orderList");
+            box.innerHTML = "";
+            if(orders.length === 0) { box.innerHTML = '<div style="text-align:center;padding:40px;color:#888">暂无订单</div>'; return; }
+
+            orders.forEach(function(order){
+                var isDisabled = (order.status === '已改签' && !order.original_train_no);
+                var statusClass = "status-unpaid";
+                if(order.pay_status === "已支付") statusClass = "status-paid";
+                if(order.status === "已退票" || order.status === "已改签") statusClass = "status-gray";
+
+                var actions = "";
+                if(!isDisabled){
+                    if(order.pay_status === "未支付" && order.status !== "已退票" && order.status !== "已改签") {
+                        actions = '<button class="action-btn btn-pay" onclick="goPay(\'' + order.order_no + '\')">去支付</button>' +
+                                  '<button class="action-btn btn-cancel" onclick="cancelOrder(' + order.id + ')">取消</button>';
+                    }
+                    if((order.status === "已购票" || order.status === "已改签") && order.pay_status === "已支付") {
+                        actions = '<button class="action-btn btn-refund" onclick="refundOrder(' + order.id + ')">退票</button>';
+                        if(order.status === "已购票") {
+                            actions += '<button class="action-btn btn-reschedule" onclick="rescheduleOrder(' + order.id + ')">改签</button>';
+                        }
+                    }
                 }
-                box.innerHTML = "";
-                list.forEach(order => {
-                    const card = document.createElement("div");
-                    card.className = "order-card";
-                    // 解构订单数据
-                    const [id, trainNo, seat, status, price, isStudent] = order;
 
-                    // 获取车次信息（出发/到达站、时间）
-                    fetch(`/train_info?train_no=${trainNo}`)
-                    .then(res => res.json())
-                    .then(train => {
-                        const startStation = train.start;
-                        const endStation = train.end;
-                        const startTime = train.time;
-                        const arriveTime = "12:30"; // 和购票页一致的到达时间
+                var origHtml = "";
+                if(order.original_train_no) {
+                    origHtml = '<div class="orig-info">改签自: ' + order.original_train_no.split('_')[0] +
+                               (order.original_seat_type ? ' · ' + order.original_seat_type : '') + '</div>';
+                }
+                if(isDisabled) {
+                    origHtml = '<div class="orig-info">已改签至新车次</div>';
+                }
 
-                        // 渲染订单卡片
-                        card.innerHTML = `
-                            <div class="order-header">
-                                <div class="train-info">
-                                    <span class="train-no">${trainNo}</span>
-                                    ${isStudent === 'y' ? '<span class="student-tag">学生票</span>' : ''}
-                                </div>
-                                <span class="order-status">${status}</span>
-                            </div>
-                            <div class="order-details">
-                                <div class="station-info">
-                                    <div class="depart-info">
-                                        <div class="time">${startTime}</div>
-                                        <div class="station">${startStation}</div>
-                                    </div>
-                                    <div class="arrow">→</div>
-                                    <div class="arrive-info">
-                                        <div class="time">${arriveTime}</div>
-                                        <div class="station">${endStation}</div>
-                                    </div>
-                                </div>
-                                <div class="seat-price-info">
-                                    <div class="seat-type">${seat}</div>
-                                    <div class="price">¥${price.toFixed(2)}</div>
-                                    <button class="refund-btn" onclick="refundOrder(${id})" ${status === '已退票' ? 'disabled' : ''}>退票</button>
-                                </div>
-                            </div>
-                        `;
-                        box.appendChild(card);
-                    });
-                });
+                var card = document.createElement("div");
+                card.className = "order-card" + (isDisabled ? " gray" : "");
+                card.innerHTML =
+                    '<div class="order-header">' +
+                        '<div>' +
+                            '<span class="train-no">' + order.train_no.split('_')[0] + '</span>' +
+                            (order.is_student === 'y' ? '<span class="student-tag"> 学生票</span>' : '') +
+                            '<span style="color:#888;font-size:13px"> · 乘车人: ' + order.passenger_name + '</span>' +
+                        '</div>' +
+                        '<span class="order-status ' + statusClass + '">' + order.status + '</span>' +
+                    '</div>' +
+                    '<div class="order-details">' +
+                        '<div class="station-info">' +
+                            '<div class="depart-info"><div class="time">' + order.depart_time + '</div><div class="station">' + order.start + '</div></div>' +
+                            '<div class="arrow">→</div>' +
+                            '<div class="arrive-info"><div class="time">' + order.arrive_time + '</div><div class="station">' + order.end + '</div></div>' +
+                        '</div>' +
+                        '<div class="seat-price-info">' +
+                            '<div class="seat-type">' + order.seat_type + '</div>' +
+                            '<div class="price">¥' + order.price.toFixed(2) + '</div>' +
+                            actions +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="order-no">订单号: ' + order.order_no + ' | ' + order.create_time + '</div>' +
+                    origHtml;
+                box.appendChild(card);
             });
         }
 
-        // 退票操作
-        function refundOrder(orderId) {
-            if (!confirm("确定要退票吗？")) return;
-            fetch("/refund", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: `order_id=${orderId}`
-            })
-            .then(res => res.text())
-            .then(msg => {
-                alert(msg);
-                // 刷新订单列表
-                loadOrders();
-            });
-        }
-
-        // 页面加载时获取订单
-        window.onload = function(){
-            loadOrders();
-        }
+        function goPay(orderNo) { location.href = '/pay_page?order_no=' + orderNo; }
+        async function cancelOrder(id) { if(!confirm("确认取消？")) return; var fd=new FormData(); fd.append("order_id",id); alert(await (await fetch("/cancel_order",{method:"POST",body:fd})).text()); loadOrders(); loadCount(); }
+        async function refundOrder(id) { if(!confirm("确认退票？")) return; var fd=new FormData(); fd.append("order_id",id); alert(await (await fetch("/refund",{method:"POST",body:fd})).text()); loadOrders(); loadCount(); }
+        function rescheduleOrder(id) { location.href = '/reschedule_page?order_id=' + id; }
+        window.onload = function(){ loadCount(); loadOrders(); }
     </script>
 </body>
 </html>

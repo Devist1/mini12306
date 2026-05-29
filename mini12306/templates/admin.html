@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员后台 - MINI 12306</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: white; box-shadow: 4px 0 12px rgba(0,0,0,0.05); padding: 30px 0; display: flex; flex-direction: column; }
+        .user-info { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid #eee; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2A7FAA, #1B5A7A); color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .username { font-size: 16px; color: #333; font-weight: 600; }
+        .nav-menu { margin-top: 20px; }
+        .nav-item { padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: #f7faff; }
+        .nav-item.active { background: #eef5ff; color: #2A7FAA; border-right: 3px solid #2A7FAA; }
+        .logout-btn { margin-top: auto; padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; text-align: center; border-top: 1px solid #eee; }
+        .logout-btn:hover { color: #ff4d4f; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .page-title { font-size: 24px; color: #2A7FAA; margin-bottom: 25px; text-align: center; }
+        .section { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-width: 900px; margin: 0 auto 20px; display: none; }
+        .section.active { display: block; }
+        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f7faff; color: #555; font-weight: 600; }
+        .btn { padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; color: white; margin-right: 4px; }
+        .btn-primary { background: #2A7FAA; }
+        .btn-danger { background: #ff4d4f; }
+        .btn-success { background: #52c41a; }
+        .btn-warning { background: #fa8c16; }
+        .input-inline { padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; width: 80px; }
+        .tab-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 14px; }
+        .tab-btn.active { background: #2A7FAA; color: white; border-color: #2A7FAA; }
+        .log-entry { padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .log-time { color: #999; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="username" id="sidebarUser">管理员</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active">⚙️ 系统管理</div>
+                <div class="nav-item" onclick="location.href='/index'">🎫 车票预订</div>
+                <div class="nav-item" onclick="location.href='/order_page'">📋 我的订单</div>
+                <div class="nav-item" onclick="location.href='/personal_page'">👤 个人中心</div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="page-title">⚙️ 管理员后台</div>
+
+            <!-- Tab 切换 -->
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('trains')">🚄 车次管理</button>
+                <button class="tab-btn" onclick="switchTab('users')">👥 用户管理</button>
+                <button class="tab-btn" onclick="switchTab('orders')">📋 订单管理</button>
+                <button class="tab-btn" onclick="switchTab('config')">⚙️ 系统配置</button>
+                <button class="tab-btn" onclick="switchTab('logs')">📜 系统日志</button>
+            </div>
+
+            <!-- 车次管理 -->
+            <div class="section active" id="tab-trains">
+                <div class="section-title">车次管理</div>
+                <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
+                    <input type="text" id="add_train_no" placeholder="车次号" class="input-inline" style="width:100px">
+                    <input type="text" id="add_start" placeholder="出发地" class="input-inline" style="width:80px">
+                    <input type="text" id="add_end" placeholder="目的地" class="input-inline" style="width:80px">
+                    <input type="text" id="add_depart" placeholder="发车时间" class="input-inline" style="width:80px">
+                    <input type="text" id="add_arrive" placeholder="到达时间" class="input-inline" style="width:80px">
+                    <input type="number" id="add_price" placeholder="票价" class="input-inline" style="width:70px">
+                    <input type="number" id="add_tickets" placeholder="总票数" class="input-inline" style="width:70px">
+                    <select id="add_type" class="input-inline" style="width:80px">
+                        <option value="高铁">高铁</option><option value="动车">动车</option>
+                        <option value="普速火车">普速火车</option><option value="飞机">飞机</option>
+                    </select>
+                    <input type="date" id="add_date" class="input-inline" style="width:120px">
+                    <button class="btn btn-success" onclick="addTrain()">新增车次</button>
+                </div>
+                <div id="trainTable" style="max-height:400px;overflow-y:auto;"></div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div class="section" id="tab-users">
+                <div class="section-title">用户管理</div>
+                <div id="userTable" style="max-height:400px;overflow-y:auto;"></div>
+            </div>
+
+            <!-- 订单管理 -->
+            <div class="section" id="tab-orders">
+                <div class="section-title">全部订单</div>
+                <div id="allOrderTable" style="max-height:400px;overflow-y:auto;"></div>
+            </div>
+
+            <!-- 系统配置 -->
+            <div class="section" id="tab-config">
+                <div class="section-title">系统参数配置</div>
+                <div id="configTable"></div>
+            </div>
+
+            <!-- 系统日志 -->
+            <div class="section" id="tab-logs">
+                <div class="section-title">系统日志（最近200条）</div>
+                <div id="logList" style="max-height:500px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const username = sessionStorage.getItem("username") || "admin";
+        document.getElementById("sidebarUser").innerText = username + "（管理员）";
+
+        let currentTab = "trains";
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll(".tab-btn").forEach((b,i) => b.classList.toggle("active", false));
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("tab-" + tab).classList.add("active");
+
+            if(tab === "trains") loadTrains();
+            if(tab === "users") loadUsers();
+            if(tab === "orders") loadAllOrders();
+            if(tab === "config") loadConfig();
+            if(tab === "logs") loadLogs();
+        }
+
+        // ======== 车次管理 ========
+        async function loadTrains() {
+            const res = await fetch("/get_trains");
+            const list = await res.json();
+            const html = `<table><tr><th>车次</th><th>出发</th><th>到达</th><th>发车</th><th>到达</th><th>日期</th><th>票价</th><th>余票</th><th>类型</th><th>操作</th></tr>
+                ${list.map(t => `<tr>
+                    <td>${t.train_no.split('_')[0]}</td><td>${t.start}</td><td>${t.end}</td>
+                    <td>${t.depart_time}</td><td>${t.arrive_time}</td><td>${t.travel_date}</td>
+                    <td>¥${t.price}</td><td>${t.remaining_tickets}/${t.total_tickets}</td><td>${t.type}</td>
+                    <td><button class="btn btn-danger" onclick="delTrain('${t.train_no}')">删除</button>
+                        <input type="number" class="input-inline" id="upd_${t.train_no}" placeholder="新余票" style="width:70px">
+                        <button class="btn btn-primary" onclick="updateTrain('${t.train_no}','remaining_tickets',document.getElementById('upd_${t.train_no}').value)">更新</button></td>
+                </tr>`).join('')}
+            </table>`;
+            document.getElementById("trainTable").innerHTML = html;
+        }
+
+        async function addTrain() {
+            const fd = new FormData();
+            const fields = ["train_no","start","end","depart_time","arrive_time","price","total_tickets","type","travel_date"];
+            const ids = ["add_train_no","add_start","add_end","add_depart","add_arrive","add_price","add_tickets","add_type","add_date"];
+            for(let i=0;i<fields.length;i++) {
+                const val = document.getElementById(ids[i]).value;
+                if(!val) { alert(`请填写 ${fields[i]}`); return; }
+                fd.append(fields[i], val);
+            }
+            fd.append("seat_types", JSON.stringify(["二等座","一等座","商务座"]));
+            const res = await fetch("/admin/add_train", { method:"POST", body:fd });
+            alert(await res.text());
+            loadTrains();
+        }
+
+        async function updateTrain(trainNo, field, value) {
+            if(!value) { alert("请输入新值"); return; }
+            const fd = new FormData();
+            fd.append("train_no", trainNo);
+            fd.append("field", field);
+            fd.append("value", value);
+            const res = await fetch("/admin/update_train", { method:"POST", body:fd });
+            alert(await res.text());
+            loadTrains();
+        }
+
+        async function delTrain(trainNo) {
+            if(!confirm("确认删除车次 " + trainNo + "？")) return;
+            const fd = new FormData(); fd.append("train_no", trainNo);
+            const res = await fetch("/admin/del_train", { method:"POST", body:fd });
+            alert(await res.text());
+            loadTrains();
+        }
+
+        // ======== 用户管理 ========
+        async function loadUsers() {
+            const res = await fetch("/admin/users");
+            const list = await res.json();
+            const html = `<table><tr><th>用户名</th><th>身份证</th><th>手机号</th><th>角色</th><th>输错次数</th><th>锁定状态</th><th>操作</th></tr>
+                ${list.map(u => `<tr>
+                    <td>${u.username}</td><td>${u.idcard}</td><td>${u.phone}</td><td>${u.role}</td>
+                    <td>${u.login_attempts}</td><td>${u.locked_until ? '已锁定' : '正常'}</td>
+                    <td><button class="btn ${u.locked_until ? 'btn-success' : 'btn-danger'}" onclick="toggleUser('${u.username}','${u.locked_until ? 'enable' : 'disable'}')">
+                        ${u.locked_until ? '启用' : '禁用'}</button></td>
+                </tr>`).join('')}
+            </table>`;
+            document.getElementById("userTable").innerHTML = html;
+        }
+
+        async function toggleUser(uname, action) {
+            const fd = new FormData();
+            fd.append("username", uname);
+            fd.append("action", action);
+            const res = await fetch("/admin/toggle_user", { method:"POST", body:fd });
+            alert(await res.text());
+            loadUsers();
+        }
+
+        // ======== 订单管理 ========
+        async function loadAllOrders() {
+            const res = await fetch("/all_orders");
+            const list = await res.json();
+            const html = `<table><tr><th>订单号</th><th>用户</th><th>乘车人</th><th>车次</th><th>席别</th><th>票价</th><th>状态</th><th>支付</th><th>时间</th></tr>
+                ${list.map(o => `<tr>
+                    <td>${o.order_no}</td><td>${o.username}</td><td>${o.passenger_name}</td>
+                    <td>${o.train_no.split('_')[0]}</td><td>${o.seat_type}</td><td>¥${o.price.toFixed(2)}</td>
+                    <td>${o.status}</td><td>${o.pay_status}</td><td>${o.create_time}</td>
+                </tr>`).join('')}
+            </table>`;
+            document.getElementById("allOrderTable").innerHTML = html;
+        }
+
+        // ======== 系统配置 ========
+        async function loadConfig() {
+            const res = await fetch("/admin/config");
+            const list = await res.json();
+            const labels = { refund_fee_24h: "24h内退票手续费", refund_fee_48h: "24-48h退票手续费", pay_timeout: "支付超时(秒)", daily_buy_limit: "每日购票限制" };
+            const html = list.map(c => `<div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #eee;">
+                <b style="width:180px">${labels[c.key] || c.key}</b>
+                <input type="text" id="cfg_${c.key}" value="${c.value}" class="input-inline" style="width:120px">
+                <button class="btn btn-primary" onclick="saveConfig('${c.key}')">保存</button>
+            </div>`).join("");
+            document.getElementById("configTable").innerHTML = html;
+        }
+
+        async function saveConfig(key) {
+            const val = document.getElementById("cfg_" + key).value;
+            const fd = new FormData();
+            fd.append("key", key);
+            fd.append("value", val);
+            const res = await fetch("/admin/update_config", { method:"POST", body:fd });
+            alert(await res.text());
+        }
+
+        // ======== 系统日志 ========
+        async function loadLogs() {
+            const res = await fetch("/admin/logs");
+            const list = await res.json();
+            const html = list.map(log => `<div class="log-entry">
+                <span class="log-time">${log.create_time}</span>
+                [<b>${log.username || '-'}</b>]
+                ${log.action} - ${log.detail}
+            </div>`).join("");
+            document.getElementById("logList").innerHTML = html || '<div style="color:#888;padding:20px;text-align:center;">暂无日志</div>';
+        }
+
+        async function doLogout() {
+            await fetch("/logout");
+            sessionStorage.clear();
+            location.href = "/";
+        }
+
+        window.onload = function() {
+            document.querySelectorAll(".tab-btn")[0].classList.add("active");
+            document.getElementById("tab-trains").classList.add("active");
+            loadTrains();
+        }
+    </script>
+</body>
+</html>

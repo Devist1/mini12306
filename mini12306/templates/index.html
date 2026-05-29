@@ -2,574 +2,165 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>MINI 12306</title>
+    <title>MINI 12306 - 车票预订</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-
-        body {
-            background-color: #f0f7ff;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* 左侧导航栏 */
-        .sidebar {
-            width: 220px;
-            background: white;
-            box-shadow: 4px 0 12px rgba(0,0,0,0.05);
-            padding: 30px 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-info {
-            text-align: center;
-            padding: 0 20px 30px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2A7FAA, #1B5A7A);
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-        }
-
-        .username {
-            font-size: 16px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .nav-menu {
-            margin-top: 20px;
-        }
-
-        .nav-item {
-            padding: 15px 30px;
-            color: #666;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-item.active {
-            background: #eef5ff;
-            color: #2A7FAA;
-            border-right: 3px solid #2A7FAA;
-        }
-
-        .nav-item:hover {
-            background: #f7faff;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            padding: 15px 30px;
-            color: #666;
-            font-size: 15px;
-            cursor: pointer;
-            text-align: center;
-            border-top: 1px solid #eee;
-        }
-
-        .logout-btn:hover {
-            color: #ff4d4f;
-        }
-
-        /* 右侧主内容区 */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            color: #2A7FAA;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        /* 搜索卡片 */
-        .search-card {
-            background: white;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .input-item {
-            flex: 1;
-            position: relative;
-        }
-
-        .input-item select,
-        .input-item input {
-            width: 100%;
-            padding: 14px 16px 14px 40px;
-            border: 1px solid #e4edf7;
-            border-radius: 12px;
-            background: #f7faff;
-            font-size: 15px;
-            appearance: none;
-            outline: none;
-        }
-
-        .input-item select:focus,
-        .input-item input:focus {
-            border-color: #2A7FAA;
-            background: white;
-        }
-
-        .input-item i {
-            position: absolute;
-            left: 14px;
-            top: 16px;
-            color: #888;
-            pointer-events: none;
-        }
-
-        .swap-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #eef5ff;
-            border: none;
-            color: #2A7FAA;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .swap-btn:hover {
-            transform: rotate(180deg);
-        }
-
-        .search-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, #2A7FAA, #1B5A7A);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* 车次列表卡片 */
-        .train-list {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .train-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .train-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .train-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .train-type-tag {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .type-gd { background: #1677ff; }
-        .type-dc { background: #4096ff; }
-        .type-pt { background: #8c8c8c; }
-        .type-plane { background: #fa8c16; }
-
-        .time-info {
-            text-align: center;
-        }
-
-        .depart-time {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .arrive-time {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .station-name {
-            font-size: 14px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .duration {
-            font-size: 12px;
-            color: #999;
-        }
-
-        /* 席别列表 */
-        .seat-list {
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-
-        .seat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .seat-name {
-            font-size: 15px;
-            color: #333;
-            width: 80px;
-        }
-
-        .seat-price {
-            font-size: 18px;
-            color: #2A7FAA;
-            font-weight: bold;
-        }
-
-        .seat-status {
-            font-size: 14px;
-            color: #52c41a;
-        }
-
-        .book-btn {
-            padding: 8px 16px;
-            background: #2A7FAA;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* 订单页 */
-        .order-page {
-            display: none;
-        }
-
-        .order-list {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .order-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .order-status {
-            color: #2A7FAA;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: white; box-shadow: 4px 0 12px rgba(0,0,0,0.05); padding: 30px 0; display: flex; flex-direction: column; }
+        .user-info { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid #eee; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2A7FAA, #1B5A7A); color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .username { font-size: 16px; color: #333; font-weight: 600; }
+        .nav-menu { margin-top: 20px; }
+        .nav-item { padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item.active { background: #eef5ff; color: #2A7FAA; border-right: 3px solid #2A7FAA; }
+        .nav-item:hover { background: #f7faff; }
+        .main-content { flex: 1; padding: 30px; }
+        .page-title { font-size: 24px; color: #2A7FAA; margin-bottom: 20px; text-align: center; }
+        .search-card { background: white; border-radius: 24px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin-bottom: 25px; max-width: 850px; margin-left: auto; margin-right: auto; }
+        .search-box { display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .input-item { flex: 1; min-width: 130px; }
+        .input-item select, .input-item input { width: 100%; padding: 12px 14px; border: 1px solid #e4edf7; border-radius: 12px; background: #f7faff; font-size: 14px; outline: none; }
+        .input-item select:focus, .input-item input:focus { border-color: #2A7FAA; background: white; }
+        .swap-btn { width: 38px; height: 38px; border-radius: 50%; background: #eef5ff; border: none; color: #2A7FAA; cursor: pointer; font-size: 18px; flex-shrink: 0; }
+        .search-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #2A7FAA, #1B5A7A); color: white; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; }
+        .train-list { max-width: 850px; margin: 0 auto; }
+        .train-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .train-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .train-type-tag { padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white; font-weight: bold; }
+        .type-gd { background: #1677ff; } .type-dc { background: #4096ff; } .type-pt { background: #8c8c8c; } .type-plane { background: #fa8c16; }
+        .time-info { text-align: center; }
+        .depart-time, .arrive-time { font-size: 18px; font-weight: bold; color: #333; }
+        .station-name { font-size: 13px; color: #666; }
+        .duration { font-size: 12px; color: #999; }
+        .seat-list { border-top: 1px solid #eee; padding-top: 12px; }
+        .seat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .seat-name { font-size: 14px; color: #333; width: 70px; }
+        .seat-price { font-size: 16px; color: #2A7FAA; font-weight: bold; }
+        .seat-status { font-size: 13px; color: #52c41a; }
+        .book-btn { padding: 6px 14px; background: #2A7FAA; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .book-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .order-page { display: none; }
+        .order-list { max-width: 850px; margin: 0 auto; }
+        .order-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .order-status { font-weight: bold; }
+        .status-paid { color: #52c41a; } .status-unpaid { color: #fa8c16; } .status-refunded { color: #999; }
+        .order-details { display: flex; justify-content: space-between; align-items: center; }
+        .refund-btn, .cancel-btn, .reschedule-btn { padding: 5px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 6px; }
+        .refund-btn { background: #ff4d4f; color: white; }
+        .cancel-btn { background: #999; color: white; }
+        .reschedule-btn { background: #52c41a; color: white; }
+        .refund-btn:disabled, .cancel-btn:disabled, .reschedule-btn:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- 左侧导航栏 -->
         <div class="sidebar">
             <div class="user-info">
                 <div class="avatar">👤</div>
-                <div class="username">admin</div>
+                <div class="username" id="sidebarUser">用户</div>
             </div>
             <div class="nav-menu">
-                <div class="nav-item active" onclick="switchPage('ticket')">
-                    🎫 车票预订
-                </div>
-                <div class="nav-item" onclick="switchPage('order')">
-                    📋 我的订单
-                </div>
+                <div class="nav-item" id="adminNav" style="display:none;" onclick="location.href='/admin_page'">⚙️ 系统管理</div>
+                <div class="nav-item active">🎫 车票预订</div>
+                <div class="nav-item" onclick="location.href='/order_page'">📋 我的订单</div>
+                <div class="nav-item" onclick="location.href='/personal_page'">👤 个人中心</div>
             </div>
-            <div class="logout-btn" onclick="location.href='/'">退出登录</div>
         </div>
-
-        <!-- 右侧主内容区 -->
         <div class="main-content">
-            <!-- 车票预订页 -->
             <div id="ticketPage">
                 <div class="page-title">MINI 12306 · 车票预订</div>
-
                 <div class="search-card">
                     <div class="search-box">
                         <div class="input-item">
-                            <i>🚩</i>
-                            <select id="startCity">
-                                <option value="北京南">北京南</option>
-                                <option value="北京">北京</option>
-                                <option value="北京西">北京西</option>
-                                <option value="上海虹桥">上海虹桥</option>
-                                <option value="上海浦东">上海浦东</option>
-                                <option value="广州南">广州南</option>
-                                <option value="广州">广州</option>
-                                <option value="深圳北">深圳北</option>
-                                <option value="深圳宝安">深圳宝安</option>
-                                <option value="武汉">武汉</option>
-                                <option value="汉口">汉口</option>
-                                <option value="杭州东">杭州东</option>
-                                <option value="成都东">成都东</option>
-                                <option value="重庆西">重庆西</option>
-                            </select>
+                            <select id="startCity"><option value="">全部出发地</option></select>
                         </div>
                         <button class="swap-btn" onclick="swapCity()">⇄</button>
                         <div class="input-item">
-                            <i>📍</i>
-                            <select id="endCity">
-                                <option value="上海虹桥">上海虹桥</option>
-                                <option value="北京南">北京南</option>
-                                <option value="北京">北京</option>
-                                <option value="北京西">北京西</option>
-                                <option value="上海浦东">上海浦东</option>
-                                <option value="广州南">广州南</option>
-                                <option value="广州">广州</option>
-                                <option value="深圳北">深圳北</option>
-                                <option value="深圳宝安">深圳宝安</option>
-                                <option value="武汉">武汉</option>
-                                <option value="汉口">汉口</option>
-                                <option value="杭州东">杭州东</option>
-                                <option value="成都东">成都东</option>
-                                <option value="重庆西">重庆西</option>
-                            </select>
+                            <select id="endCity"><option value="">全部目的地</option></select>
                         </div>
-                        <!-- 日期下拉框（今天+往后14天，真实系统日期） -->
                         <div class="input-item">
-                            <i>📅</i>
                             <select id="dateSelect"></select>
+                        </div>
+                        <div class="input-item">
+                            <input type="text" id="trainNoInput" placeholder="车次号（可选）">
+                        </div>
+                        <div class="input-item">
+                            <select id="trainType">
+                                <option value="">全部类型</option>
+                                <option value="高铁">🚄 高铁</option>
+                                <option value="动车">🚈 动车</option>
+                                <option value="普速火车">🚂 火车</option>
+                                <option value="飞机">✈ 飞机</option>
+                            </select>
                         </div>
                     </div>
                     <button class="search-btn" onclick="searchTrain()">查询车票</button>
                 </div>
-
                 <div class="train-list" id="trainList"></div>
-            </div>
-
-            <!-- 我的订单页 -->
-            <div id="orderPage" class="order-page">
-                <div class="page-title">我的订单</div>
-                <div class="order-list" id="orderList"></div>
             </div>
         </div>
     </div>
-
     <script>
-        let currentList = [];
+        var username = sessionStorage.getItem("username") || "user";
+        var role = sessionStorage.getItem("role") || "user";
+        document.getElementById("sidebarUser").innerText = username;
+        if(role === "admin") { document.getElementById("adminNav").style.display = "flex"; }
 
-        // 生成日期下拉：真实今天 + 往后14天
-        function initDateSelect() {
-            const dateSel = document.getElementById("dateSelect");
-            const weekArr = ["周日","周一","周二","周三","周四","周五","周六"];
-            const today = new Date(); // 本地真实时间
-
-            dateSel.innerHTML = "";
-            for (let i = 0; i < 15; i++) {
-                let d = new Date(today.getTime() + i * 24 * 60 * 60 * 1000);
-                let m = d.getMonth() + 1;
-                let day = d.getDate();
-                let week = weekArr[d.getDay()];
-                let showText = `${m}月${day}日 ${week}`;
-
-                let opt = document.createElement("option");
-                opt.value = showText;
-                opt.innerText = showText;
-                if (i === 0) opt.selected = true;
-                dateSel.appendChild(opt);
-            }
+        var cities = ["北京","北京南","北京西","北京首都","上海","上海虹桥","上海浦东","广州","广州南","深圳北","深圳宝安","武汉","汉口","杭州东","成都东","重庆西"];
+        function fillCitySelects() {
+            var sc = document.getElementById("startCity"), ec = document.getElementById("endCity");
+            sc.innerHTML = '<option value="">全部出发地</option>';
+            ec.innerHTML = '<option value="">全部目的地</option>';
+            cities.forEach(function(c) { sc.innerHTML += '<option value="'+c+'">'+c+'</option>'; ec.innerHTML += '<option value="'+c+'">'+c+'</option>'; });
         }
-
-        // 页面切换
-        function switchPage(page) {
-            document.querySelectorAll(".nav-item").forEach(item => {
-                item.classList.remove("active");
-            });
-            event.target.classList.add("active");
-
-            document.getElementById("ticketPage").style.display = page === "ticket" ? "block" : "none";
-            document.getElementById("orderPage").style.display = page === "order" ? "block" : "none";
-
-            if (page === "order") {
-                loadOrders();
-            }
-        }
-
-        // 加载订单
-        function loadOrders() {
-            fetch("/orders/admin")
-            .then(res => res.json())
-            .then(list => {
-                const box = document.getElementById("orderList");
-                if (list.length === 0) {
-                    box.innerHTML = "<div style='text-align:center;padding:40px;color:#888'>暂无订单</div>";
-                    return;
-                }
-                box.innerHTML = "";
-                list.forEach(order => {
-                    const card = document.createElement("div");
-                    card.className = "order-card";
-                    card.innerHTML = `
-                        <div class="order-status">${order[3]}</div>
-                        <div>车次：${order[1]}</div>
-                        <div>座位：${order[2]}</div>
-                    `;
-                    box.appendChild(card);
-                });
+        function initDate() {
+            fetch("/get_dates").then(function(r){return r.json()}).then(function(dates){
+                var ds = document.getElementById("dateSelect");
+                ds.innerHTML = '<option value="">全部日期</option>';
+                dates.forEach(function(d){ ds.innerHTML += '<option value="'+d.value+'">'+d.label+'</option>'; });
             });
         }
-
-        // 交换出发地/目的地
         function swapCity() {
-            const start = document.getElementById("startCity");
-            const end = document.getElementById("endCity");
-            const temp = start.value;
-            start.value = end.value;
-            end.value = temp;
+            var s = document.getElementById("startCity"), e = document.getElementById("endCity");
+            var tmp = s.value; s.value = e.value; e.value = tmp;
         }
-
-        // 页面加载
-        window.onload = function(){
-            initDateSelect(); // 每次打开都按真实日期生成
+        async function searchTrain() {
+            var params = new URLSearchParams();
+            var start = document.getElementById("startCity").value;
+            var end = document.getElementById("endCity").value;
+            var date = document.getElementById("dateSelect").value;
+            var tno = document.getElementById("trainNoInput").value;
+            var trainType = document.getElementById("trainType").value;
+            if(start) params.append("start", start);
+            if(end) params.append("end", end);
+            if(date) params.append("date", date);
+            if(tno) params.append("train_no", tno);
+            if(trainType) params.append("type", trainType);
+            var res = await fetch("/search_trains?" + params.toString());
+            var list = await res.json();
+            renderTrains(list);
         }
-
-        function searchTrain(){
-            const start = document.getElementById("startCity").value;
-            const end = document.getElementById("endCity").value;
-            fetch(`/search_trains?start=${start}&end=${end}`)
-            .then(res=>res.json())
-            .then(list=>{
-                currentList = list;
-                renderTrainList();
-            })
-        }
-
-        // 渲染车次列表，带席别信息
-        function renderTrainList(){
-            const box = document.getElementById("trainList");
-            box.innerHTML = "";
-
-            if(currentList.length === 0){
-                box.innerHTML = "<div style='text-align:center;padding:40px;color:#888'>暂无匹配车次</div>";
-                return;
-            }
-
-            // 为每个车次生成席别信息
-            const seatTypes = {
-                "高铁": [
-                    {name: "二等座", discount: 0.75},
-                    {name: "一等座", discount: 1.2},
-                    {name: "商务座", discount: 2.5}
-                ],
-                "动车": [
-                    {name: "二等座", discount: 0.75},
-                    {name: "一等座", discount: 1.2}
-                ],
-                "普速火车": [
-                    {name: "硬座", discount: 0.5},
-                    {name: "硬卧", discount: 0.75},
-                    {name: "软卧", discount: 1.0}
-                ],
-                "飞机": [
-                    {name: "经济舱", discount: 1.0},
-                    {name: "商务舱", discount: 2.0}
-                ]
-            };
-
-            currentList.forEach(item=>{
-                const card = document.createElement("div");
-                card.className = "train-card";
-                let typeClass = "type-pt";
-                if(item[6] === "高铁") typeClass = "type-gd";
-                if(item[6] === "动车") typeClass = "type-dc";
-                if(item[6] === "飞机") typeClass = "type-plane";
-
-                // 车次头部信息
-                let headerHtml = `
-                    <div class="train-header">
-                        <div class="train-info">
-                            <span class="train-type-tag ${typeClass}">${item[6]} ${item[0]}</span>
-                        </div>
-                        <div class="time-info">
-                            <span class="depart-time">${item[3]}</span>
-                            <div class="station-name">${item[1]}</div>
-                        </div>
-                        <div class="duration">约2小时30分</div>
-                        <div class="time-info">
-                            <span class="arrive-time">12:30</span>
-                            <div class="station-name">${item[2]}</div>
-                        </div>
-                    </div>
-                `;
-
-                // 生成席别列表
-                let seatHtml = `<div class="seat-list">`;
-                const seats = seatTypes[item[6]] || [];
-                seats.forEach(seat => {
-                    const price = (item[4] * seat.discount).toFixed(2);
-                    seatHtml += `
-                        <div class="seat-item">
-                            <span class="seat-name">${seat.name}</span>
-                            <span class="seat-price">¥${price}</span>
-                            <span class="seat-status">有票</span>
-                            <button class="book-btn" onclick="location.href='/buy_page?train=${item[0]}&seat=${seat.name}'">预订</button>
-                        </div>
-                    `;
+        function renderTrains(list) {
+            var box = document.getElementById("trainList"); box.innerHTML = "";
+            if(list.length === 0) { box.innerHTML = '<div style="text-align:center;padding:40px;color:#888">暂无匹配车次</div>'; return; }
+            var seatConfig = {"高铁":[{name:"二等座",d:1.0},{name:"一等座",d:1.2},{name:"商务座",d:2.5}],"动车":[{name:"二等座",d:1.0},{name:"一等座",d:1.2}],"普速火车":[{name:"硬座",d:1.0},{name:"硬卧",d:1.5},{name:"软卧",d:2.0}],"飞机":[{name:"经济舱",d:1.0},{name:"商务舱",d:2.0}]};
+            list.forEach(function(item){
+                var card = document.createElement("div"); card.className = "train-card";
+                var tc = "type-pt"; if(item.type==="高铁") tc="type-gd"; if(item.type==="动车") tc="type-dc"; if(item.type==="飞机") tc="type-plane";
+                var html = '<div class="train-header"><span class="train-type-tag '+tc+'">'+item.type+' '+item.train_no.split('_')[0]+'</span><div class="time-info"><span class="depart-time">'+item.depart_time+'</span><div class="station-name">'+item.start+'</div></div><div class="duration">→</div><div class="time-info"><span class="arrive-time">'+item.arrive_time+'</span><div class="station-name">'+item.end+'</div></div><span style="color:#888;font-size:13px">'+item.travel_date+'</span></div>';
+                var seatsHtml = '<div class="seat-list">';
+                (seatConfig[item.type]||[]).forEach(function(seat){
+                    var price = (item.price*seat.d).toFixed(2), soldOut = item.remaining_tickets <= 0;
+                    seatsHtml += '<div class="seat-item"><span class="seat-name">'+seat.name+'</span><span class="seat-price">¥'+price+'</span><span class="seat-status">'+(soldOut?'售罄':'余票'+item.remaining_tickets)+'</span><button class="book-btn" '+(soldOut?'disabled':'')+' onclick="bookNow(\''+item.train_no+'\',\''+seat.name+'\')">预订</button></div>';
                 });
-                seatHtml += `</div>`;
-
-                card.innerHTML = headerHtml + seatHtml;
-                box.appendChild(card);
-            })
+                seatsHtml += '</div>'; card.innerHTML = html + seatsHtml; box.appendChild(card);
+            });
         }
+        function bookNow(trainNo, seatType) { location.href = '/buy_page?train='+encodeURIComponent(trainNo)+'&seat='+encodeURIComponent(seatType); }
+        window.onload = function(){ fillCitySelects(); initDate(); searchTrain(); }
     </script>
 </body>
 </html>

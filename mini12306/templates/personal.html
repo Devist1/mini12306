@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心 - MINI 12306</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: white; box-shadow: 4px 0 12px rgba(0,0,0,0.05); padding: 30px 0; display: flex; flex-direction: column; }
+        .user-info { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid #eee; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2A7FAA, #1B5A7A); color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .username { font-size: 16px; color: #333; font-weight: 600; }
+        .nav-menu { margin-top: 20px; }
+        .nav-item { padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: #f7faff; }
+        .nav-item.active { background: #eef5ff; color: #2A7FAA; border-right: 3px solid #2A7FAA; }
+        .main-content { flex: 1; padding: 30px; }
+        .page-title { font-size: 24px; color: #2A7FAA; margin-bottom: 8px; text-align: center; }
+        .ticket-count { text-align: center; color: #888; font-size: 14px; margin-bottom: 20px; }
+        .section { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-width: 700px; margin: 0 auto 20px; }
+        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .info-item { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; border-bottom: 1px solid #f5f5f5; }
+        .info-label { color: #888; }
+        .info-value { color: #333; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 100%; padding: 12px 16px; border: 1px solid #dde7f3; border-radius: 10px; background: #f7faff; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #2A7FAA; background: white; }
+        .btn { padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; color: white; margin-right: 10px; }
+        .btn-primary { background: #2A7FAA; }
+        .btn-danger { background: #ff4d4f; }
+        .btn-success { background: #52c41a; }
+        .passenger-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f7faff; border-radius: 10px; margin-bottom: 10px; }
+        .passenger-del { color: #ff4d4f; cursor: pointer; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="username" id="sidebarUser">用户</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" id="adminNav" style="display:none;" onclick="location.href='/admin_page'">⚙️ 系统管理</div>
+                <div class="nav-item" onclick="location.href='/index'">🎫 车票预订</div>
+                <div class="nav-item" onclick="location.href='/order_page'">📋 我的订单</div>
+                <div class="nav-item active">👤 个人中心</div>
+                <div class="nav-item" onclick="doLogout()" style="margin-top:20px;border-top:1px solid #eee;">🚪 退出登录</div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="page-title">个人中心</div>
+            <div class="ticket-count" id="ticketCount"></div>
+
+            <div class="section">
+                <div class="section-title">📝 个人资料</div>
+                <div id="profileInfo"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔒 修改密码</div>
+                <div class="input-group"><input type="password" id="oldPwd" placeholder="请输入原密码"></div>
+                <div class="input-group"><input type="password" id="newPwd" placeholder="请输入新密码（含大小写+数字，≥8位）"></div>
+                <button class="btn btn-primary" onclick="changePwd()">修改密码</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">👥 常用乘车人</div>
+                <div class="input-group" style="display:flex;gap:8px;">
+                    <input type="text" id="pName" placeholder="姓名" style="flex:1">
+                    <input type="text" id="pIdcard" placeholder="身份证号" style="flex:1">
+                    <input type="text" id="pPhone" placeholder="手机号（可选）" style="flex:1">
+                </div>
+                <button class="btn btn-success" onclick="addPassenger()">添加乘车人</button>
+                <div id="passengerList" style="margin-top:15px;"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var username = sessionStorage.getItem("username") || "user";
+        var role = sessionStorage.getItem("role") || "user";
+        document.getElementById("sidebarUser").innerText = username;
+        if(role === "admin") { document.getElementById("adminNav").style.display = "flex"; }
+
+        async function loadCount() {
+            var res = await fetch('/order_count/' + username);
+            var data = await res.json();
+            document.getElementById("ticketCount").innerText = '有效票 ' + data.active + ' 张';
+        }
+
+        async function loadProfile() {
+            var res = await fetch("/get_profile?username=" + username);
+            var profile = await res.json();
+            var box = document.getElementById("profileInfo");
+            box.innerHTML = '';
+            box.innerHTML += '<div class="info-item"><span class="info-label">用户名</span><span class="info-value">' + profile.username + '</span></div>';
+            box.innerHTML += '<div class="info-item"><span class="info-label">身份证号</span><span class="info-value">' + profile.idcard + '</span></div>';
+            box.innerHTML += '<div class="info-item"><span class="info-label">手机号</span><span class="info-value">' + profile.phone + '</span></div>';
+            box.innerHTML += '<div class="info-item"><span class="info-label">角色</span><span class="info-value">' + (profile.role === 'admin' ? '管理员' : '普通用户') + '</span></div>';
+        }
+
+        async function changePwd() {
+            var oldPwd = document.getElementById("oldPwd").value.trim();
+            var newPwd = document.getElementById("newPwd").value.trim();
+            if(!oldPwd || !newPwd) { alert("请填写完整"); return; }
+            if(newPwd.length < 8) { alert("新密码长度不能少于8位"); return; }
+            if(!/[A-Z]/.test(newPwd) || !/[a-z]/.test(newPwd) || !/\d/.test(newPwd)) {
+                alert("密码须包含大写字母、小写字母和数字"); return;
+            }
+            var fd = new FormData();
+            fd.append("username", username);
+            fd.append("old_password", oldPwd);
+            fd.append("new_password", newPwd);
+            var res = await fetch("/change_password", { method:"POST", body:fd });
+            alert(await res.text());
+        }
+
+        async function loadPassengers() {
+            var res = await fetch('/passengers/' + username);
+            var list = await res.json();
+            var box = document.getElementById("passengerList");
+            box.innerHTML = "";
+            list.forEach(function(p) {
+                var div = document.createElement("div");
+                div.className = "passenger-card";
+                div.innerHTML = '<div><b>' + p.passenger_name + '</b><span style="color:#999;margin-left:10px">' + p.idcard.substring(0,6) + '****' + p.idcard.substring(14) + '</span><span style="color:#999;margin-left:10px">' + (p.phone || '-') + '</span></div><span class="passenger-del" onclick="delPassenger(' + p.id + ')">×</span>';
+                box.appendChild(div);
+            });
+        }
+
+        async function addPassenger() {
+            var name = document.getElementById("pName").value.trim();
+            var idcard = document.getElementById("pIdcard").value.trim();
+            var phone = document.getElementById("pPhone").value.trim();
+            if(!name || !idcard) { alert("姓名和身份证必填"); return; }
+            if(!/^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/.test(idcard)) {
+                alert("身份证格式不正确"); return;
+            }
+            var fd = new FormData();
+            fd.append("username", username);
+            fd.append("passenger_name", name);
+            fd.append("idcard", idcard);
+            fd.append("phone", phone);
+            var res = await fetch("/add_passenger", { method:"POST", body:fd });
+            alert(await res.text());
+            loadPassengers();
+        }
+
+        async function delPassenger(id) {
+            if(!confirm("确认删除？")) return;
+            var fd = new FormData(); fd.append("id", id);
+            var res = await fetch("/del_passenger", { method:"POST", body:fd });
+            alert(await res.text());
+            loadPassengers();
+        }
+
+        async function doLogout() {
+            await fetch("/logout");
+            sessionStorage.clear();
+            location.href = "/";
+        }
+
+        window.onload = function() {
+            loadProfile();
+            loadPassengers();
+            loadCount();
+        }
+    </script>
+</body>
+</html>

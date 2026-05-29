@@ -5,240 +5,87 @@
     <title>MINI 12306 - 用户注册</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", system-ui, sans-serif;
-        }
-
-        body {
-            background-color: #f0f7ff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .register-wrapper {
-            display: flex;
-            background: #ffffff;
-            width: 100%;
-            max-width: 1000px;
-            border-radius: 28px;
-            box-shadow: 0 16px 48px rgba(30, 90, 130, 0.12),
-                        0 6px 16px rgba(30, 90, 130, 0.06);
-            overflow: hidden;
-        }
-
-        .info-side {
-            width: 45%;
-            background: linear-gradient(135deg, #2A7FAA 0%, #1B5A7A 100%);
-            color: white;
-            padding: 60px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .info-side .welcome-title {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .info-side .welcome-sub {
-            font-size: 16px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            opacity: 0.95;
-        }
-
-        .info-side .tips-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-side .tips-list {
-            list-style: none;
-            line-height: 1.7;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .info-side .tips-list li {
-            margin-bottom: 10px;
-            padding-left: 18px;
-            position: relative;
-        }
-
-        .info-side .tips-list li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .form-side {
-            width: 55%;
-            padding: 60px 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .form-side .logo-title {
-            font-size: 32px;
-            color: #2A7FAA;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .form-side .logo-desc {
-            font-size: 15px;
-            color: #748c9c;
-            text-align: center;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-        }
-
-        .input-group {
-            margin-bottom: 22px;
-        }
-
-        .input-group input {
-            width: 100%;
-            height: 54px;
-            padding: 0 20px;
-            border: 1px solid #dde7f3;
-            border-radius: 16px;
-            background-color: #f7faff;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: #2A7FAA;
-            background-color: #fff;
-            box-shadow: 0 0 0 4px rgba(42, 127, 170, 0.1);
-        }
-
-        .register-btn {
-            width: 100%;
-            height: 54px;
-            border-radius: 16px;
-            background: linear-gradient(90deg, #2A7FAA, #1B5A7A);
-            color: #fff;
-            border: none;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-            margin-bottom: 28px;
-            transition: transform 0.2s ease;
-        }
-
-        .register-btn:active {
-            transform: scale(0.97);
-        }
-
-        .login-tip {
-            font-size: 14px;
-            color: #748c9c;
-            text-align: center;
-        }
-
-        .login-tip a {
-            color: #2A7FAA;
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 6px;
-        }
-
-        @media (max-width: 768px) {
-            .register-wrapper {
-                flex-direction: column;
-            }
-            .info-side, .form-side {
-                width: 100%;
-                padding: 40px 30px;
-            }
-            .info-side {
-                order: 2;
-            }
-            .form-side {
-                order: 1;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", system-ui, sans-serif; }
+        body { background-color: #f0f7ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .register-wrapper { display: flex; background: #fff; width: 100%; max-width: 1000px; border-radius: 28px; box-shadow: 0 16px 48px rgba(30,90,130,0.12); overflow: hidden; }
+        .info-side { width: 45%; background: linear-gradient(135deg, #2A7FAA 0%, #1B5A7A 100%); color: white; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; }
+        .info-side .welcome-title { font-size: 30px; font-weight: 700; margin-bottom: 20px; }
+        .info-side .welcome-sub { font-size: 16px; line-height: 1.8; margin-bottom: 30px; opacity: 0.95; }
+        .info-side .tips-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .info-side .tips-list { list-style: none; line-height: 1.7; font-size: 14px; opacity: 0.9; }
+        .info-side .tips-list li { margin-bottom: 10px; padding-left: 18px; position: relative; }
+        .info-side .tips-list li::before { content: "•"; position: absolute; left: 0; color: #fff; font-weight: bold; }
+        .form-side { width: 55%; padding: 60px 50px; display: flex; flex-direction: column; justify-content: center; }
+        .form-side .logo-title { font-size: 32px; color: #2A7FAA; font-weight: 700; text-align: center; margin-bottom: 10px; }
+        .form-side .logo-desc { font-size: 15px; color: #748c9c; text-align: center; margin-bottom: 35px; }
+        .input-group { margin-bottom: 18px; }
+        .input-group input { width: 100%; height: 50px; padding: 0 20px; border: 1px solid #dde7f3; border-radius: 14px; background-color: #f7faff; font-size: 15px; outline: none; }
+        .input-group input:focus { border-color: #2A7FAA; background-color: #fff; box-shadow: 0 0 0 4px rgba(42,127,170,0.1); }
+        .pw-hint { font-size: 12px; color: #999; margin-top: -10px; margin-bottom: 10px; padding-left: 4px; }
+        .register-btn { width: 100%; height: 54px; border-radius: 16px; background: linear-gradient(90deg, #2A7FAA, #1B5A7A); color: #fff; border: none; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 8px; margin-bottom: 20px; }
+        .register-btn:active { transform: scale(0.97); }
+        .login-tip { font-size: 14px; color: #748c9c; text-align: center; }
+        .login-tip a { color: #2A7FAA; text-decoration: none; font-weight: 500; margin-left: 6px; }
+        @media (max-width: 768px) { .register-wrapper { flex-direction: column; } .info-side, .form-side { width: 100%; padding: 40px 30px; } }
     </style>
 </head>
 <body>
     <div class="register-wrapper">
-        <!-- 左侧信息栏 -->
         <div class="info-side">
             <h2 class="welcome-title">加入 MINI 12306</h2>
-            <p class="welcome-sub">
-                注册成为平台用户，即可享受便捷的车票预订、订单管理等服务，开启您的智能出行之旅。
-            </p>
-            <div class="tips-title">
-                <span>⚠️</span> 注册须知
-            </div>
+            <p class="welcome-sub">注册成为平台用户，享受便捷的车票预订、订单管理等服务。</p>
+            <div class="tips-title"><span>⚠️</span> 注册须知</div>
             <ul class="tips-list">
-                <li>请填写真实有效的手机号，后续可用于账号找回与验证。</li>
-                <li>密码长度建议不少于6位，包含字母、数字或特殊字符，提升账号安全性。</li>
-                <li>请妥善保管您的账号信息，切勿向他人透露。</li>
-                <li>学生用户注册后，可凭有效证件在购票时享受学生票折扣。</li>
+                <li>用户名、身份证号、手机号均不可重复注册</li>
+                <li>密码须包含大写字母 + 小写字母 + 数字，长度≥8位</li>
+                <li>请填写真实有效的身份证号（18位）和手机号</li>
+                <li>学生用户注册后购票时可享受学生票折扣</li>
             </ul>
         </div>
-
-        <!-- 右侧注册表单 -->
         <div class="form-side">
             <h1 class="logo-title">用户注册</h1>
             <p class="logo-desc">创建账号，开启便捷出行</p>
-
             <form id="registerForm">
                 <div class="input-group">
-                    <input type="text" name="username" placeholder="请设置用户名" required>
+                    <input type="text" name="username" placeholder="请设置用户名" required autocomplete="off">
                 </div>
                 <div class="input-group">
-                    <input type="password" name="password" placeholder="请设置密码" required>
+                    <input type="password" name="password" placeholder="请设置密码（含大小写字母+数字，≥8位）" required id="pwd">
+                </div>
+                <div class="pw-hint">密码须包含大写字母、小写字母和数字，长度≥8位</div>
+                <div class="input-group">
+                    <input type="text" name="idcard" placeholder="请输入18位身份证号码" required maxlength="18" id="idcard">
                 </div>
                 <div class="input-group">
-                    <input type="text" name="phone" placeholder="请输入手机号" required>
+                    <input type="text" name="phone" placeholder="请输入11位手机号" required maxlength="11" id="phone">
                 </div>
-
                 <button type="submit" class="register-btn">立即注册</button>
             </form>
-
-            <div class="login-tip">
-                已有账号？<a href="/">立即登录</a>
-            </div>
+            <div class="login-tip">已有账号？<a href="/">立即登录</a></div>
         </div>
     </div>
-
     <script>
+        // 前端校验
         document.getElementById("registerForm").addEventListener("submit", async function(e){
             e.preventDefault();
             const formData = new FormData(this);
-            const res = await fetch("/do_register", {
-                method:"POST",
-                body:formData
-            });
+            const username = formData.get("username").trim();
+            const password = formData.get("password").trim();
+            const idcard = formData.get("idcard").trim();
+            const phone = formData.get("phone").trim();
+
+            if(!username || !password || !idcard || !phone) { alert("所有字段均为必填"); return; }
+            if(password.length < 8) { alert("密码长度不能少于8位"); return; }
+            if(!/[A-Z]/.test(password)) { alert("密码必须包含大写字母"); return; }
+            if(!/[a-z]/.test(password)) { alert("密码必须包含小写字母"); return; }
+            if(!/\d/.test(password)) { alert("密码必须包含数字"); return; }
+            if(!/^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/.test(idcard)) { alert("身份证格式不正确（需18位有效格式）"); return; }
+            if(!/^1[3-9]\d{9}$/.test(phone)) { alert("手机号格式不正确（11位，以1开头）"); return; }
+
+            const res = await fetch("/do_register", { method:"POST", body:formData });
             const text = await res.text();
-            if(text === "注册成功"){
-                alert("注册成功，请登录！");
-                location.href = "/";
-            }else{
-                alert(text);
-            }
+            if(text === "注册成功") { alert("注册成功，请登录！"); location.href = "/"; }
+            else { alert(text); }
         })
     </script>
 </body>
