@@ -5,7 +5,7 @@ Mini12306 铁路售票系统 - Web版 v2.1
 """
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-import sqlite3, re, time, random, hashlib, json, threading, traceback
+import sqlite3, re, time, random, hashlib, json, threading, traceback, os
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -22,6 +22,26 @@ SAME_CITY = {
     "成都": ["成都东"],
     "重庆": ["重庆西"],
     "杭州": ["杭州东"],
+    "西安": ["西安北"],
+    "南京": ["南京南"],
+    "郑州": ["郑州东"],
+    "长沙": ["长沙南"],
+    "天津": ["天津南", "天津西"],
+    "济南": ["济南西"],
+    "青岛": ["青岛"],
+    "沈阳": ["沈阳北"],
+    "大连": ["大连北"],
+    "哈尔滨": ["哈尔滨西"],
+    "福州": ["福州", "福州南"],
+    "厦门": ["厦门", "厦门北"],
+    "合肥": ["合肥南"],
+    "昆明": ["昆明南"],
+    "贵阳": ["贵阳北"],
+    "南昌": ["南昌西"],
+    "兰州": ["兰州西"],
+    "石家庄": ["石家庄"],
+    "太原": ["太原南"],
+    "南宁": ["南宁东"],
 }
 def get_same_city_stations(station):
     """返回与给定车站同城的所有车站列表"""
@@ -91,30 +111,37 @@ def init_db():
     c.execute("INSERT OR IGNORE INTO users (username, password, idcard, phone, role) VALUES (?,?,?,?,?)",
               ("testuser", user_pwd, "320106199508152234", "13912345678", "user"))
 
+    # 从 JSON 文件加载车次数据
     today = datetime.now().date()
-    test_trains = [
-        ("G1", "北京南", "上海虹桥", "08:00", "12:30", 553, '["二等座","一等座","商务座"]', 120, "高铁"),
-        ("G3", "北京南", "上海虹桥", "09:00", "13:30", 553, '["二等座","一等座","商务座"]', 100, "高铁"),
-        ("D200", "北京南", "上海虹桥", "10:30", "15:00", 340, '["二等座","一等座"]', 80, "动车"),
-        ("Z19", "北京", "上海", "19:00", "07:30", 177, '["硬座","硬卧","软卧"]', 50, "普速火车"),
-        ("MU5101", "北京首都", "上海浦东", "09:00", "11:00", 720, '["经济舱","商务舱"]', 30, "飞机"),
-        ("G69", "北京西", "广州南", "07:30", "15:00", 862, '["二等座","一等座","商务座"]', 100, "高铁"),
-        ("G81", "北京西", "广州南", "10:00", "17:30", 862, '["二等座","一等座","商务座"]', 90, "高铁"),
-        ("K599", "北京西", "广州", "17:00", "22:00", 251, '["硬座","硬卧","软卧"]', 40, "普速火车"),
-        ("G2781", "上海虹桥", "深圳北", "08:20", "14:50", 608, '["二等座","一等座","商务座"]', 90, "高铁"),
-        ("9C8871", "上海虹桥", "深圳宝安", "11:00", "13:30", 480, '["经济舱","商务舱"]', 25, "飞机"),
-        ("G84", "武汉", "北京西", "09:00", "13:00", 522, '["二等座","一等座","商务座"]', 110, "高铁"),
-        ("G512", "汉口", "北京西", "14:00", "18:00", 520, '["二等座","一等座","商务座"]', 85, "高铁"),
-        ("G1303", "杭州东", "广州南", "12:10", "18:40", 720, '["二等座","一等座","商务座"]', 75, "高铁"),
-        ("G8501", "成都东", "重庆西", "07:40", "09:10", 154, '["二等座","一等座","商务座"]', 150, "高铁"),
-    ]
-    for train in test_trains:
-        for i in range(30):
+    json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trains.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        days = data.get("days", 30)
+        test_trains_raw = data.get("trains", [])
+        print(f"  [INFO] 从 trains.json 加载了 {len(test_trains_raw)} 条基准车次")
+    else:
+        days = 30
+        test_trains_raw = [
+            {"train_no":"G1","start":"北京南","end":"上海虹桥","depart_time":"08:00","arrive_time":"12:30","price":553,"seat_types":["二等座","一等座","商务座"],"total_tickets":120,"type":"高铁"},
+            {"train_no":"G3","start":"北京南","end":"上海虹桥","depart_time":"09:00","arrive_time":"13:30","price":553,"seat_types":["二等座","一等座","商务座"],"total_tickets":100,"type":"高铁"},
+            {"train_no":"D200","start":"北京南","end":"上海虹桥","depart_time":"10:30","arrive_time":"15:00","price":340,"seat_types":["二等座","一等座"],"total_tickets":80,"type":"动车"},
+            {"train_no":"Z19","start":"北京","end":"上海","depart_time":"19:00","arrive_time":"07:30","price":177,"seat_types":["硬座","硬卧","软卧"],"total_tickets":50,"type":"普速火车"},
+            {"train_no":"MU5101","start":"北京首都","end":"上海浦东","depart_time":"09:00","arrive_time":"11:00","price":720,"seat_types":["经济舱","商务舱"],"total_tickets":30,"type":"飞机"},
+            {"train_no":"G69","start":"北京西","end":"广州南","depart_time":"07:30","arrive_time":"15:00","price":862,"seat_types":["二等座","一等座","商务座"],"total_tickets":100,"type":"高铁"},
+            {"train_no":"G81","start":"北京西","end":"广州南","depart_time":"10:00","arrive_time":"17:30","price":862,"seat_types":["二等座","一等座","商务座"],"total_tickets":90,"type":"高铁"},
+            {"train_no":"G84","start":"武汉","end":"北京西","depart_time":"09:00","arrive_time":"13:00","price":522,"seat_types":["二等座","一等座","商务座"],"total_tickets":110,"type":"高铁"},
+            {"train_no":"G512","start":"汉口","end":"北京西","depart_time":"14:00","arrive_time":"18:00","price":520,"seat_types":["二等座","一等座","商务座"],"total_tickets":85,"type":"高铁"},
+            {"train_no":"G8501","start":"成都东","end":"重庆西","depart_time":"07:40","arrive_time":"09:10","price":154,"seat_types":["二等座","一等座","商务座"],"total_tickets":150,"type":"高铁"},
+        ]
+        print(f"  [WARN] 未找到 trains.json，使用默认 {len(test_trains_raw)} 条车次")
+    for train in test_trains_raw:
+        for i in range(days):
             d = today + timedelta(days=i)
             ds = d.strftime("%Y-%m-%d")
-            tno = train[0] + "_" + ds
+            tno = train["train_no"] + "_" + ds
             c.execute("INSERT OR IGNORE INTO trains (train_no,start,end,depart_time,arrive_time,price,seat_types,total_tickets,remaining_tickets,type,travel_date) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                      (tno, train[1], train[2], train[3], train[4], train[5], train[6], train[7], train[7], train[8], ds))
+                      (tno, train["start"], train["end"], train["depart_time"], train["arrive_time"], train["price"], json.dumps(train["seat_types"]), train["total_tickets"], train["total_tickets"], train["type"], ds))
 
     c.execute("INSERT OR IGNORE INTO passengers (username, passenger_name, idcard, phone) VALUES (?,?,?,?)",
               ("testuser", "张三", "320106199508152234", "13912345678"))
