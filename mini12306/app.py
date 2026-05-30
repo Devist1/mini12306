@@ -45,7 +45,11 @@ SAME_CITY = {
 }
 def get_same_city_stations(station):
     """返回与给定车站同城的所有车站列表"""
-    for group in SAME_CITY.values():
+    for key, group in SAME_CITY.items():
+        if station == key or station in group:
+            return group
+    # 也被其他城组作为别名的情况
+    for key, group in SAME_CITY.items():
         if station in group:
             return group
     return [station]
@@ -323,12 +327,20 @@ def get_trains():
     train_type = request.args.get("type", "")
     where = ["travel_date >= ?"]
     params = [today]
-    if start: where.append("start=?"); params.append(start)
-    if end: where.append("end=?"); params.append(end)
+    if start:
+        start_group = get_same_city_stations(start)
+        placeholders = ",".join(["?"] * len(start_group))
+        where.append(f"start IN ({placeholders})")
+        params.extend(start_group)
+    if end:
+        end_group = get_same_city_stations(end)
+        placeholders = ",".join(["?"] * len(end_group))
+        where.append(f"end IN ({placeholders})")
+        params.extend(end_group)
     if date: where.append("travel_date=?"); params.append(date)
     if train_no: where.append("train_no LIKE ?"); params.append(f"%{train_no}%")
     if train_type: where.append("type=?"); params.append(train_type)
-    c.execute("SELECT * FROM trains WHERE " + " AND ".join(where) + " ORDER BY travel_date, depart_time", params)
+    c.execute("SELECT * FROM trains WHERE " + " AND ".join(where) + " ORDER BY travel_date, depart_time LIMIT 500", params)
     rows = c.fetchall(); conn.close()
     return jsonify([dict(r) for r in rows])
 
@@ -391,7 +403,24 @@ def buy():
 
         price = train["price"]
         train_type = train["type"]
-        price = price * SEAT_DISCOUNTS.get(seat_type, 1.0)
+        # 尝试从 seat_types JSON 中读取该席别的实际票价
+        try:
+            seats = json.loads(train["seat_types"])
+            if isinstance(seats, list) and len(seats) > 0 and isinstance(seats[0], dict):
+                # 新格式 [{name,price,tickets},...]
+                found = False
+                for s in seats:
+                    if s.get("name") == seat_type:
+                        price = s["price"]
+                        found = True
+                        break
+                if not found:
+                    price = price * SEAT_DISCOUNTS.get(seat_type, 1.0)
+            else:
+                # 旧格式 ["二等座","一等座",...]
+                price = price * SEAT_DISCOUNTS.get(seat_type, 1.0)
+        except:
+            price = price * SEAT_DISCOUNTS.get(seat_type, 1.0)
         if is_student == "y":
             if (train_type in ("高铁","动车")) and seat_type == "二等座": price *= 0.75
             elif train_type == "普速火车" and seat_type == "硬座": price *= 0.5
@@ -719,17 +748,28 @@ def change_password():
 def admin_add_train():
     if session.get("role") != "admin": return "无权限"
     data = request.form
-    required = ["train_no","start","end","depart_time","arrive_time","price","seat_types","total_tickets","type","travel_date"]
+    required = ["train_no","start","end","depart_time","arrive_time","type","travel_date"]
     for f in required:
         if not data.get(f): return f"缺少字段: {f}"
     train_no = data["train_no"] + "_" + data["travel_date"]
-    price = float(data["price"]); total = int(data["total_tickets"])
+    # 新格式：seat_details 为 JSON 数组 [{name,price,tickets},...]
+    seat_details_str = data.get("seat_details", "")
+    if seat_details_str:
+        seat_details = json.loads(seat_details_str)
+        seat_types_json = json.dumps(seat_details)
+        total = sum(s["tickets"] for s in seat_details)
+        price = min(s["price"] for s in seat_details)
+    else:
+        # 兼容旧格式
+        seat_types_json = data.get("seat_types", '["二等座","一等座","商务座"]')
+        price = float(data.get("price", 0))
+        total = int(data.get("total_tickets", 0))
     conn = get_db(); c = conn.cursor()
     try:
         c.execute('''INSERT INTO trains (train_no,start,end,depart_time,arrive_time,price,seat_types,total_tickets,remaining_tickets,type,travel_date)
                      VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
                   (train_no, data["start"], data["end"], data["depart_time"], data["arrive_time"],
-                   price, data["seat_types"], total, total, data["type"], data["travel_date"]))
+                   price, seat_types_json, total, total, data["type"], data["travel_date"]))
         conn.commit(); conn.close()
         write_log(session.get("username"), "新增车次", f"车次:{train_no}")
         return "添加成功"
