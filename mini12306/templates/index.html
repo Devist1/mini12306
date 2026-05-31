@@ -4,64 +4,97 @@
     <meta charset="UTF-8">
     <title>MINI 12306 - 车票预订</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ======================== CSS样式 ======================== -->
     <style>
+        /* ---------- 基础重置 ---------- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
         body { background-color: #f0f7ff; min-height: 100vh; }
+
+        /* ---------- 应用容器（侧边栏 + 主区域） ---------- */
         .app-container { display: flex; min-height: 100vh; }
+
+        /* ---------- 左侧边栏 ---------- */
         .sidebar { width: 220px; background: white; box-shadow: 4px 0 12px rgba(0,0,0,0.05); padding: 30px 0; display: flex; flex-direction: column; }
         .user-info { text-align: center; padding: 0 20px 30px; border-bottom: 1px solid #eee; }
         .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2A7FAA, #1B5A7A); color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
         .username { font-size: 16px; color: #333; font-weight: 600; }
+
+        /* ---------- 导航菜单 ---------- */
         .nav-menu { margin-top: 20px; }
         .nav-item { padding: 15px 30px; color: #666; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
         .nav-item.active { background: #eef5ff; color: #2A7FAA; border-right: 3px solid #2A7FAA; }
         .nav-item:hover { background: #f7faff; }
+
+        /* ---------- 主内容区域 ---------- */
         .main-content { flex: 1; padding: 30px; }
         .page-title { font-size: 24px; color: #2A7FAA; margin-bottom: 20px; text-align: center; }
-        .search-card { background: white; border-radius: 24px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin-bottom: 25px; max-width: 850px; margin-left: auto; margin-right: auto; }
-        .search-box { display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+
+        /* ---------- 搜索卡片 ---------- */
+        .search-card { background: white; border-radius: 24px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin-bottom: 25px; max-width: 950px; margin-left: auto; margin-right: auto; }
+        .search-box { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; }
+
+        /* 输入项容器 */
         .input-item { flex: 1; min-width: 130px; }
-        .input-item select, .input-item input { width: 100%; padding: 12px 14px; border: 1px solid #e4edf7; border-radius: 12px; background: #f7faff; font-size: 14px; outline: none; }
+        .input-item label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; font-weight: 500; }
+        .input-item select, .input-item input { width: 100%; padding: 10px 12px; border: 1px solid #e4edf7; border-radius: 12px; background: #f7faff; font-size: 14px; outline: none; }
         .input-item select:focus, .input-item input:focus { border-color: #2A7FAA; background: white; }
-        .swap-btn { width: 38px; height: 38px; border-radius: 50%; background: #eef5ff; border: none; color: #2A7FAA; cursor: pointer; font-size: 18px; flex-shrink: 0; }
+
+        /* 城市+车站双下拉框组（并排显示） */
+        .station-group { display: flex; gap: 6px; }
+        .station-group select { flex: 1; padding: 10px 8px; border: 1px solid #e4edf7; border-radius: 10px; background: #f7faff; font-size: 13px; outline: none; min-width: 0; }
+        .station-group select:focus { border-color: #2A7FAA; background: white; }
+
+        /* 出发/到达交换按钮 */
+        .swap-btn { width: 38px; height: 38px; border-radius: 50%; background: #eef5ff; border: none; color: #2A7FAA; cursor: pointer; font-size: 18px; flex-shrink: 0; margin-top: 18px; }
+
+        /* 查询按钮 */
         .search-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #2A7FAA, #1B5A7A); color: white; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; }
-        .train-list { max-width: 850px; margin: 0 auto; }
+        .search-btn:hover { opacity: 0.95; }
+
+        /* ---------- 车次列表 ---------- */
+        .train-list { max-width: 950px; margin: 0 auto; }
         .train-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .train-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .train-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+
+        /* 车次类型标签颜色 */
         .train-type-tag { padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white; font-weight: bold; }
-        .type-gd { background: #1677ff; } .type-dc { background: #4096ff; } .type-pt { background: #8c8c8c; } .type-plane { background: #fa8c16; }
+        .type-gd { background: #1677ff; }       /* 高铁：蓝色 */
+        .type-dc { background: #4096ff; }        /* 动车：浅蓝 */
+        .type-pt { background: #8c8c8c; }        /* 普速：灰色 */
+        .type-plane { background: #fa8c16; }     /* 飞机：橙色 */
+
+        /* 时间信息 */
         .time-info { text-align: center; }
         .depart-time, .arrive-time { font-size: 18px; font-weight: bold; color: #333; }
         .station-name { font-size: 13px; color: #666; }
         .duration { font-size: 12px; color: #999; }
+
+        /* 席别列表 */
         .seat-list { border-top: 1px solid #eee; padding-top: 12px; }
         .seat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
         .seat-name { font-size: 14px; color: #333; width: 70px; }
         .seat-price { font-size: 16px; color: #2A7FAA; font-weight: bold; }
         .seat-status { font-size: 13px; color: #52c41a; }
+
+        /* 预订按钮 */
         .book-btn { padding: 6px 14px; background: #2A7FAA; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
         .book-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .order-page { display: none; }
-        .order-list { max-width: 850px; margin: 0 auto; }
-        .order-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
-        .order-status { font-weight: bold; }
-        .status-paid { color: #52c41a; } .status-unpaid { color: #fa8c16; } .status-refunded { color: #999; }
-        .order-details { display: flex; justify-content: space-between; align-items: center; }
-        .refund-btn, .cancel-btn, .reschedule-btn { padding: 5px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 6px; }
-        .refund-btn { background: #ff4d4f; color: white; }
-        .cancel-btn { background: #999; color: white; }
-        .reschedule-btn { background: #52c41a; color: white; }
-        .refund-btn:disabled, .cancel-btn:disabled, .reschedule-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* 提示文字 */
+        .hint-text { font-size: 12px; color: #999; text-align: center; margin-top: 4px; }
     </style>
 </head>
 <body>
+    <!-- ======================== 页面结构 ======================== -->
     <div class="app-container">
+        <!-- ----- 左侧边栏（导航） ----- -->
         <div class="sidebar">
+            <!-- 用户头像+用户名 -->
             <div class="user-info">
                 <div class="avatar">👤</div>
                 <div class="username" id="sidebarUser">用户</div>
             </div>
+            <!-- 导航菜单项 -->
             <div class="nav-menu">
                 <div class="nav-item" id="adminNav" style="display:none;" onclick="location.href='/admin_page'">⚙️ 系统管理</div>
                 <div class="nav-item active">🎫 车票预订</div>
@@ -69,25 +102,53 @@
                 <div class="nav-item" onclick="location.href='/personal_page'">👤 个人中心</div>
             </div>
         </div>
+
+        <!-- ----- 主内容：车票搜索 + 结果列表 ----- -->
         <div class="main-content">
             <div id="ticketPage">
                 <div class="page-title">MINI 12306 · 车票预订</div>
+
+                <!-- 搜索区域：城市选择→车站选择→日期→车次号→类型 -->
                 <div class="search-card">
                     <div class="search-box">
+                        <!-- 出发地：城市下拉 + 车站下拉（联动） -->
                         <div class="input-item">
-                            <select id="startCity"><option value="">全部出发地</option></select>
+                            <label>出发城市</label>
+                            <div class="station-group">
+                                <select id="startCity" onchange="onCityChange('start')"><option value="">全部</option></select>
+                                <select id="startStation"><option value="">全部车站</option></select>
+                            </div>
+                            <div class="hint-text" id="startHint">选择城市后可选具体车站</div>
                         </div>
+
+                        <!-- 交换按钮：交换出发和到达 -->
                         <button class="swap-btn" onclick="swapCity()">⇄</button>
+
+                        <!-- 目的地：城市下拉 + 车站下拉（联动） -->
                         <div class="input-item">
-                            <select id="endCity"><option value="">全部目的地</option></select>
+                            <label>到达城市</label>
+                            <div class="station-group">
+                                <select id="endCity" onchange="onCityChange('end')"><option value="">全部</option></select>
+                                <select id="endStation"><option value="">全部车站</option></select>
+                            </div>
+                            <div class="hint-text" id="endHint">选择城市后可选具体车站</div>
                         </div>
+
+                        <!-- 日期选择 -->
                         <div class="input-item">
+                            <label>日期</label>
                             <select id="dateSelect"></select>
                         </div>
+
+                        <!-- 车次号输入 -->
                         <div class="input-item">
+                            <label>车次号</label>
                             <input type="text" id="trainNoInput" placeholder="车次号（可选）">
                         </div>
+
+                        <!-- 交通工具类型 -->
                         <div class="input-item">
+                            <label>类型</label>
                             <select id="trainType">
                                 <option value="">全部类型</option>
                                 <option value="高铁">🚄 高铁</option>
@@ -97,25 +158,94 @@
                             </select>
                         </div>
                     </div>
-                    <button class="search-btn" onclick="searchTrain()">查询车票</button>
+
+                    <!-- 查询按钮 -->
+                    <button class="search-btn" onclick="searchTrain()">🔍 查询车票</button>
                 </div>
+
+                <!-- 车次结果列表 -->
                 <div class="train-list" id="trainList"></div>
             </div>
         </div>
     </div>
+
+    <!-- ======================== JavaScript逻辑 ======================== -->
     <script>
+        // ---- 读取登录状态 ----
         var username = sessionStorage.getItem("username") || "user";
         var role = sessionStorage.getItem("role") || "user";
         document.getElementById("sidebarUser").innerText = username;
+        // 如果当前用户是管理员，显示"系统管理"入口
         if(role === "admin") { document.getElementById("adminNav").style.display = "flex"; }
 
-        var cities = ["北京","北京南","北京西","北京首都","上海","上海虹桥","上海浦东","广州","广州南","深圳北","深圳宝安","武汉","汉口","杭州东","成都东","重庆西","西安北","南京南","郑州东","长沙南","天津南","天津西","济南西","青岛","沈阳北","大连北","哈尔滨西","福州","福州南","厦门","厦门北","合肥南","昆明南","贵阳北","南昌西","兰州西","石家庄","太原南","南宁东"];
+        // ---- 车站数据 ----
+        // stationData 由后端 /get_stations 接口返回，格式：
+        //   { cities: [{city:"北京",stations:["北京","北京南",...]}, ...],
+        //     all_stations: ["上海","上海虹桥","上海南",...] }
+        var stationData = { cities: [], all_stations: [] };
+        var cityToStations = {};   // 映射：城市名 → 车站列表
+        var stationToCity = {};    // 映射：车站名 → 城市名
+
+        /**
+         * 加载车站数据
+         * 调用后端 /get_stations 接口获取按城市分组的车站信息
+         */
+        function loadStations() {
+            fetch("/get_stations").then(function(r){return r.json()}).then(function(data){
+                stationData = data;
+                // 构建双向映射
+                cityToStations = {};
+                stationToCity = {};
+                data.cities.forEach(function(c){
+                    cityToStations[c.city] = c.stations;
+                    c.stations.forEach(function(s){ stationToCity[s] = c.city; });
+                });
+                fillCitySelects();  // 填充城市下拉框
+            });
+        }
+
+        /**
+         * 填充出发/到达城市下拉框
+         * 每个城市显示车站数量，方便用户了解覆盖范围
+         */
         function fillCitySelects() {
             var sc = document.getElementById("startCity"), ec = document.getElementById("endCity");
-            sc.innerHTML = '<option value="">全部出发地</option>';
-            ec.innerHTML = '<option value="">全部目的地</option>';
-            cities.forEach(function(c) { sc.innerHTML += '<option value="'+c+'">'+c+'</option>'; ec.innerHTML += '<option value="'+c+'">'+c+'</option>'; });
+            sc.innerHTML = '<option value="">全部城市</option>';
+            ec.innerHTML = '<option value="">全部城市</option>';
+            stationData.cities.forEach(function(c) {
+                sc.innerHTML += '<option value="'+c.city+'">🏙 '+c.city+' ('+c.stations.length+'个站)</option>';
+                ec.innerHTML += '<option value="'+c.city+'">🏙 '+c.city+' ('+c.stations.length+'个站)</option>';
+            });
+            onCityChange('start');  // 初始化出发车站下拉
+            onCityChange('end');    // 初始化到达车站下拉
         }
+
+        /**
+         * 城市切换回调：当用户选择城市后，动态更新车站下拉框
+         * @param {string} prefix - 'start' 或 'end'，区分出发/到达
+         */
+        function onCityChange(prefix) {
+            var citySel = document.getElementById(prefix + 'City');
+            var stationSel = document.getElementById(prefix + 'Station');
+            var hint = document.getElementById(prefix + 'Hint');
+            var city = citySel.value;
+
+            stationSel.innerHTML = '<option value="">全部车站</option>';
+            if(city && cityToStations[city]) {
+                // 已选城市 → 列出该城市所有车站
+                cityToStations[city].forEach(function(s){
+                    stationSel.innerHTML += '<option value="'+s+'">🚉 '+s+'</option>';
+                });
+                hint.innerText = '已选城市：' + city + '（共' + cityToStations[city].length + '个车站）';
+            } else if(!city) {
+                hint.innerText = '未选城市时将查询所有车站';
+            }
+        }
+
+        /**
+         * 初始化日期选择器
+         * 调用后端 /get_dates 接口获取未来15天日期
+         */
         function initDate() {
             fetch("/get_dates").then(function(r){return r.json()}).then(function(dates){
                 var ds = document.getElementById("dateSelect");
@@ -123,44 +253,134 @@
                 dates.forEach(function(d){ ds.innerHTML += '<option value="'+d.value+'">'+d.label+'</option>'; });
             });
         }
+
+        /**
+         * 交换出发和到达的选项
+         */
         function swapCity() {
-            var s = document.getElementById("startCity"), e = document.getElementById("endCity");
-            var tmp = s.value; s.value = e.value; e.value = tmp;
+            var sc = document.getElementById("startCity"), ec = document.getElementById("endCity");
+            var tmpc = sc.value; sc.value = ec.value; ec.value = tmpc;
+            onCityChange('start');  // 刷新出发车站列表
+            onCityChange('end');    // 刷新到达车站列表
         }
-        async function searchTrain() {
+
+        /**
+         * 解析用户选择的站点（优先使用具体车站，否则使用城市名）
+         * @param {string} prefix - 'start' 或 'end'
+         * @returns {string} 站点名或城市名
+         */
+        function getEffectiveStation(prefix) {
+            var station = document.getElementById(prefix + 'Station').value;
+            if(station) return station;   // 选了具体车站 → 返回车站名
+            var city = document.getElementById(prefix + 'City').value;
+            if(city) return city;          // 只选了城市 → 返回城市名（后端会展开）
+            return '';
+        }
+
+        /**
+         * 判断用户是否选了具体车站（用于发送 exact_start/exact_end 标志）
+         * 当用户选了车站下拉 或 未选任何城市时 = 精确匹配
+         * @returns {boolean}
+         */
+        function isExactStation(prefix) {
+            return !!document.getElementById(prefix + 'Station').value || !document.getElementById(prefix + 'City').value;
+        }
+
+        /**
+         * 执行车票查询
+         * 收集所有筛选条件 → 调用 /search_trains 接口 → 渲染结果
+         */
+        function searchTrain() {
             var params = new URLSearchParams();
-            var start = document.getElementById("startCity").value;
-            var end = document.getElementById("endCity").value;
+            var start = getEffectiveStation('start');
+            var end = getEffectiveStation('end');
             var date = document.getElementById("dateSelect").value;
-            var tno = document.getElementById("trainNoInput").value;
+            var tno = document.getElementById("trainNoInput").value.trim();
             var trainType = document.getElementById("trainType").value;
             if(start) params.append("start", start);
             if(end) params.append("end", end);
+            // 精确匹配标志：用户选了具体车站时发送，防止城市同名车站被展开
+            if(start && isExactStation('start')) params.append("exact_start", "1");
+            if(end && isExactStation('end')) params.append("exact_end", "1");
             if(date) params.append("date", date);
             if(tno) params.append("train_no", tno);
             if(trainType) params.append("type", trainType);
-            var res = await fetch("/search_trains?" + params.toString());
-            var list = await res.json();
-            renderTrains(list);
+            fetch("/search_trains?" + params.toString())
+                .then(function(r){return r.json()})
+                .then(function(list){ renderTrains(list); });
         }
+
+        /**
+         * 渲染车次列表
+         * 根据交通工具类型的不同，显示对应的席别和票价
+         * @param {Array} list - 车次数据数组
+         */
         function renderTrains(list) {
             var box = document.getElementById("trainList"); box.innerHTML = "";
-            if(list.length === 0) { box.innerHTML = '<div style="text-align:center;padding:40px;color:#888">暂无匹配车次</div>'; return; }
-            var seatConfig = {"高铁":[{name:"二等座",d:1.0},{name:"一等座",d:1.2},{name:"商务座",d:2.5}],"动车":[{name:"二等座",d:1.0},{name:"一等座",d:1.2}],"普速火车":[{name:"硬座",d:1.0},{name:"硬卧",d:1.5},{name:"软卧",d:2.0}],"飞机":[{name:"经济舱",d:1.0},{name:"商务舱",d:2.0}]};
+            if(list.length === 0) {
+                box.innerHTML = '<div style="text-align:center;padding:40px;color:#888">暂无匹配车次，请尝试扩大搜索范围</div>';
+                return;
+            }
+            // 每种交通工具的席别配置：name=席别名称, d=折扣系数
+            var seatConfig = {
+                "高铁": [{name:"二等座",d:1.0},{name:"一等座",d:1.2},{name:"商务座",d:2.5}],
+                "动车": [{name:"二等座",d:1.0},{name:"一等座",d:1.2}],
+                "普速火车": [{name:"硬座",d:1.0},{name:"硬卧",d:1.5},{name:"软卧",d:2.0}],
+                "飞机": [{name:"经济舱",d:1.0},{name:"商务舱",d:2.0}]
+            };
+
             list.forEach(function(item){
                 var card = document.createElement("div"); card.className = "train-card";
-                var tc = "type-pt"; if(item.type==="高铁") tc="type-gd"; if(item.type==="动车") tc="type-dc"; if(item.type==="飞机") tc="type-plane";
-                var html = '<div class="train-header"><span class="train-type-tag '+tc+'">'+item.type+' '+item.train_no.split('_')[0]+'</span><div class="time-info"><span class="depart-time">'+item.depart_time+'</span><div class="station-name">'+item.start+'</div></div><div class="duration">→</div><div class="time-info"><span class="arrive-time">'+item.arrive_time+'</span><div class="station-name">'+item.end+'</div></div><span style="color:#888;font-size:13px">'+item.travel_date+'</span></div>';
+                // 根据类型选择颜色标签
+                var tc = "type-pt";
+                if(item.type==="高铁") tc="type-gd";
+                if(item.type==="动车") tc="type-dc";
+                if(item.type==="飞机") tc="type-plane";
+                var tnoDisplay = item.train_no.split('_')[0];  // 去掉日期后缀显示
+
+                // 车次头部：类型标签 + 时间 + 车站 + 日期
+                var html = '<div class="train-header">' +
+                    '<span class="train-type-tag '+tc+'">'+item.type+' '+tnoDisplay+'</span>' +
+                    '<div class="time-info"><span class="depart-time">'+item.depart_time+'</span><div class="station-name">'+item.start+'</div></div>' +
+                    '<div class="duration">→</div>' +
+                    '<div class="time-info"><span class="arrive-time">'+item.arrive_time+'</span><div class="station-name">'+item.end+'</div></div>' +
+                    '<span style="color:#888;font-size:13px">'+item.travel_date+'</span>' +
+                    '</div>';
+
+                // 席别列表：计算每种席别的价格和余票状态
                 var seatsHtml = '<div class="seat-list">';
                 (seatConfig[item.type]||[]).forEach(function(seat){
-                    var price = (item.price*seat.d).toFixed(2), soldOut = item.remaining_tickets <= 0;
-                    seatsHtml += '<div class="seat-item"><span class="seat-name">'+seat.name+'</span><span class="seat-price">¥'+price+'</span><span class="seat-status">'+(soldOut?'售罄':'余票'+item.remaining_tickets)+'</span><button class="book-btn" '+(soldOut?'disabled':'')+' onclick="bookNow(\''+item.train_no+'\',\''+seat.name+'\')">预订</button></div>';
+                    var price = (item.price*seat.d).toFixed(2);               // 价格 = 基础价 × 折扣
+                    var soldOut = item.remaining_tickets <= 0;                 // 售罄标记
+                    seatsHtml += '<div class="seat-item">' +
+                        '<span class="seat-name">'+seat.name+'</span>' +
+                        '<span class="seat-price">¥'+price+'</span>' +
+                        '<span class="seat-status">'+(soldOut?'售罄':'余票'+item.remaining_tickets+'张')+'</span>' +
+                        '<button class="book-btn" '+(soldOut?'disabled':'')+' onclick="bookNow(\''+item.train_no+'\',\''+seat.name+'\')">预订</button>' +
+                        '</div>';
                 });
-                seatsHtml += '</div>'; card.innerHTML = html + seatsHtml; box.appendChild(card);
+                seatsHtml += '</div>';
+                card.innerHTML = html + seatsHtml;
+                box.appendChild(card);
             });
         }
-        function bookNow(trainNo, seatType) { location.href = '/buy_page?train='+encodeURIComponent(trainNo)+'&seat='+encodeURIComponent(seatType); }
-        window.onload = function(){ fillCitySelects(); initDate(); searchTrain(); }
+
+        /**
+         * 跳转到购票确认页面
+         * @param {string} trainNo - 车次号（含日期后缀）
+         * @param {string} seatType - 席别类型
+         */
+        function bookNow(trainNo, seatType) {
+            location.href = '/buy_page?train='+encodeURIComponent(trainNo)+'&seat='+encodeURIComponent(seatType);
+        }
+
+        // ======================== 页面初始化 ========================
+        // 加载车站 → 加载日期 → 自动执行一次默认查询
+        window.onload = function(){
+            loadStations();  // 加载车站数据（异步）
+            initDate();      // 加载日期数据（异步）
+            searchTrain();   // 首次默认查询（不设条件，显示所有未来车次）
+        }
     </script>
 </body>
 </html>
