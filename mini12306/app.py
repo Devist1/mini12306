@@ -219,42 +219,52 @@ threading.Thread(target=auto_cancel_worker, daemon=True).start()
 # ======================== 页面路由（返回HTML模板） ========================
 @app.route("/")
 def login_page():
+    #登录
     return render_template("login.html")
 
 @app.route("/register")
 def register_page():
+    #注册
     return render_template("register.html")
 
 @app.route("/index")
 def index_page():
+    #首页
     return render_template("index.html")
 
 @app.route("/buy_page")
 def buy_page():
+    #订票
     return render_template("buy.html")
 
 @app.route("/order_page")
 def order_page():
+    #订单
     return render_template("order.html")
 
 @app.route("/personal_page")
 def personal_page():
+    #用户
     return render_template("personal.html")
 
 @app.route("/admin_page")
 def admin_page():
+    #管理员
     return render_template("admin.html")
 
 @app.route("/pay_page")
 def pay_page():
+    #付款
     return render_template("pay.html")
 
 @app.route("/reschedule_page")
 def reschedule_page():
+    #改签
     return render_template("reschedule.html")
 
 @app.route("/reset_password")
 def reset_password_page():
+    #重置密码
     return render_template("reset_password.html")
 
 # ======================== 用户认证 ========================
