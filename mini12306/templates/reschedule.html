@@ -15,11 +15,9 @@
         .info-label { color: #888; }
         .info-value { color: #333; font-weight: 500; }
         .highlight { color: #2A7FAA; font-weight: bold; }
-
         .filter-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-bar input, .filter-bar select { padding: 10px 14px; border: 1px solid #dde7f3; border-radius: 10px; background: #f7faff; font-size: 14px; outline: none; min-width: 120px; }
         .filter-bar input:focus, .filter-bar select:focus { border-color: #2A7FAA; }
-
         .train-list { max-height: 500px; overflow-y: auto; }
         .train-card { background: #f7faff; border: 1px solid #e4edf7; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
         .train-card:hover { border-color: #2A7FAA; background: #eef5ff; }
@@ -48,14 +46,10 @@
 <body>
     <div class="container">
         <div class="page-title">🔄 车票改签</div>
-
-        <!-- 原订单信息 -->
         <div class="section" id="orderInfo">
             <div class="section-title">📋 原订单信息</div>
             <div id="orderDetail"></div>
         </div>
-
-        <!-- 选择新车次 -->
         <div class="section" id="selectSection">
             <div class="section-title">🚄 选择新车次（同城车站或相同发到站）</div>
             <div class="filter-bar">
@@ -64,28 +58,19 @@
                 <span style="line-height:40px;color:#888;font-size:13px;" id="hintSameCity"></span>
             </div>
             <div class="train-list" id="trainList"></div>
-
-            <!-- 差价提示 -->
             <div class="diff-info" id="diffInfo" style="display:none;"></div>
-
             <div style="text-align:center;margin-top:15px;">
                 <button class="btn btn-primary" id="rescheduleBtn" disabled onclick="doReschedule()">确认改签</button>
             </div>
         </div>
-
-        <!-- 改签结果 -->
         <div class="result-box" id="resultBox"></div>
-
         <div class="back-link"><a href="/order_page">← 返回我的订单</a></div>
     </div>
-
     <script>
         const params = new URLSearchParams(location.search);
         const orderId = params.get("order_id");
         let allTrains = [], rescheduleInfo = null;
         let selectedTrain = null, selectedSeat = "";
-
-        // 席别配置
         const seatConfig = {
             "高铁": ["二等座","一等座","商务座"],
             "动车": ["二等座","一等座"],
@@ -93,214 +78,137 @@
             "飞机": ["经济舱","商务舱"],
         };
         const seatDiscounts = {"二等座":1.0,"一等座":1.2,"商务座":2.5,"硬座":1.0,"硬卧":1.5,"软卧":2.0,"经济舱":1.0,"商务舱":2.0};
-
-        // 类型样式
         function typeClass(type) {
             if(type === "高铁") return "type-gd"; if(type === "动车") return "type-dc";
             if(type === "普速火车") return "type-pt"; if(type === "飞机") return "type-plane"; return "type-gd";
         }
-
-        // 加载改签信息
         async function loadInfo() {
-            const res = await fetch(`/reschedule_info/${orderId}`);
+            const res = await fetch("/reschedule_info/" + orderId);
             rescheduleInfo = await res.json();
             if(rescheduleInfo.error) { alert(rescheduleInfo.error); location.href="/order_page"; return; }
-
             const order = rescheduleInfo.order;
             const oldTrain = rescheduleInfo.old_train;
             allTrains = rescheduleInfo.available_trains;
-
-            // 渲染原订单
-            document.getElementById("orderDetail").innerHTML = `
-                <div class="info-row"><span class="info-label">订单号</span><span class="info-value">${order.order_no}</span></div>
-                <div class="info-row"><span class="info-label">原车次</span><span class="info-value highlight">${oldTrain.train_no.split('_')[0]}</span></div>
-                <div class="info-row"><span class="info-label">发到站</span><span class="info-value">${oldTrain.start} → ${oldTrain.end}</span></div>
-                <div class="info-row"><span class="info-label">发车时间</span><span class="info-value">${oldTrain.travel_date} ${oldTrain.depart_time}</span></div>
-                <div class="info-row"><span class="info-label">到达时间</span><span class="info-value">${oldTrain.arrive_time}</span></div>
-                <div class="info-row"><span class="info-label">席别</span><span class="info-value">${order.seat_type}</span></div>
-                <div class="info-row"><span class="info-label">原票价</span><span class="info-value highlight">¥${order.price.toFixed(2)}</span></div>
-                ${order.is_student === 'y' ? '<div class="info-row"><span class="info-label">学生票</span><span class="info-value" style="color:#ff9800">是</span></div>' : ''}
-            `;
-
-            // 同城提示
-            const sc = rescheduleInfo.same_city_start.join('/');
-            const ec = rescheduleInfo.same_city_end.join('/');
-            document.getElementById("hintSameCity").innerText = `发站同城: ${sc} → 到站同城: ${ec}`;
-
-            // 填充日期筛选
+            document.getElementById("orderDetail").innerHTML =
+                '<div class="info-row"><span class="info-label">订单号</span><span class="info-value">'+order.order_no+'</span></div>'+
+                '<div class="info-row"><span class="info-label">原车次</span><span class="info-value highlight">'+oldTrain.train_no.split('_')[0]+'</span></div>'+
+                '<div class="info-row"><span class="info-label">发到站</span><span class="info-value">'+oldTrain.start+' → '+oldTrain.end+'</span></div>'+
+                '<div class="info-row"><span class="info-label">发车时间</span><span class="info-value">'+oldTrain.travel_date+' '+oldTrain.depart_time+'</span></div>'+
+                '<div class="info-row"><span class="info-label">到达时间</span><span class="info-value">'+oldTrain.arrive_time+'</span></div>'+
+                '<div class="info-row"><span class="info-label">席别</span><span class="info-value">'+order.seat_type+'</span></div>'+
+                '<div class="info-row"><span class="info-label">原票价</span><span class="info-value highlight">¥'+order.price.toFixed(2)+'</span></div>'+
+                (order.is_student === 'y' ? '<div class="info-row"><span class="info-label">学生票</span><span class="info-value" style="color:#ff9800">是</span></div>' : '');
+            document.getElementById("hintSameCity").innerText = "发站同城: "+rescheduleInfo.same_city_start.join('/')+" → 到站同城: "+rescheduleInfo.same_city_end.join('/');
             const dates = [...new Set(allTrains.map(t => t.travel_date))];
             const ds = document.getElementById("filterDate");
             ds.innerHTML = '<option value="">全部日期</option>';
-            dates.forEach(d => { ds.innerHTML += `<option value="${d}">${d}</option>`; });
-
+            dates.forEach(d => { ds.innerHTML += '<option value="'+d+'">'+d+'</option>'; });
             renderTrains();
         }
-
         function renderTrains() {
             const filterTno = document.getElementById("filterTrainNo").value.trim().toUpperCase();
             const filterDate = document.getElementById("filterDate").value;
-            const order = rescheduleInfo.order;
-            const oldTrain = rescheduleInfo.old_train;
-
             let filtered = allTrains;
             if(filterTno) filtered = filtered.filter(t => t.train_no.toUpperCase().includes(filterTno));
             if(filterDate) filtered = filtered.filter(t => t.travel_date === filterDate);
-
-            const box = document.getElementById("trainList");
-            box.innerHTML = "";
+            const box = document.getElementById("trainList"); box.innerHTML = "";
             if(filtered.length === 0) { box.innerHTML = '<div style="text-align:center;padding:30px;color:#888;">暂无可选车次</div>'; return; }
-
             filtered.forEach(t => {
-                const isOld = t.train_no === oldTrain.train_no;
-                const seats = seatConfig[t.type] || [];
+                const isOld = t.train_no === rescheduleInfo.old_train.train_no;
                 const tno = t.train_no.split('_')[0];
-
-                const card = document.createElement("div");
-                card.className = "train-card";
+                const card = document.createElement("div"); card.className = "train-card";
                 card.onclick = () => selectTrain(t, card);
-
-                let seatsHtml = seats.map(s => {
-                    const newPrice = (t.price * seatDiscounts[s]).toFixed(2);
-                    return `<option value="${s}">${s} ¥${newPrice}</option>`;
-                }).join("");
-
-                card.innerHTML = `
-                    <div class="train-header">
-                        <span class="train-no">${tno} <span class="train-type-tag ${typeClass(t.type)}">${t.type}</span></span>
-                        <span style="color:#888;font-size:13px">${t.travel_date}</span>
-                        ${isOld ? '<span style="color:#999;font-size:12px;">(原车次)</span>' : ''}
-                    </div>
-                    <div class="train-detail">
-                        <div class="station-info">
-                            <div>${t.depart_time} ${t.start} →</div>
-                            <div>${t.arrive_time} ${t.end}</div>
-                        </div>
-                        <div class="price-info">
-                            基础价 ¥${t.price}
-                            <select class="seat-select" onclick="event.stopPropagation()" onchange="updateSelectedSeat('${t.train_no}', this.value)">
-                                <option value="">席别</option>
-                                ${seatsHtml}
-                            </select>
-                        </div>
-                    </div>
-                `;
+                let seatsHtml = (seatConfig[t.type]||[]).map(s => '<option value="'+s+'">'+s+' ¥'+(t.price*seatDiscounts[s]).toFixed(2)+'</option>').join("");
+                card.innerHTML =
+                    '<div class="train-header">'+
+                    '<span class="train-no">'+tno+' <span class="train-type-tag '+typeClass(t.type)+'">'+t.type+'</span></span>'+
+                    '<span style="color:#888;font-size:13px">'+t.travel_date+'</span>'+
+                    (isOld ? '<span style="color:#999;font-size:12px;">(原车次)</span>' : '')+
+                    '</div>'+
+                    '<div class="train-detail">'+
+                    '<div class="station-info"><div>'+t.depart_time+' '+t.start+' →</div><div>'+t.arrive_time+' '+t.end+'</div></div>'+
+                    '<div class="price-info">基础价 ¥'+t.price+'<select class="seat-select" onclick="event.stopPropagation()" onchange="updateSelectedSeat(\''+t.train_no+'\', this.value)"><option value="">席别</option>'+seatsHtml+'</select></div>'+
+                    '</div>';
                 box.appendChild(card);
             });
-
-            // 清除选中状态
             selectedTrain = null; selectedSeat = "";
             document.getElementById("rescheduleBtn").disabled = true;
             document.getElementById("diffInfo").style.display = "none";
         }
-
         function selectTrain(train, cardEl) {
             document.querySelectorAll(".train-card").forEach(c => c.classList.remove("selected"));
-            cardEl.classList.add("selected");
-            selectedTrain = train;
-            // 查找该卡片的席别选择
-            const seatSel = cardEl.querySelector(".seat-select");
-            selectedSeat = seatSel ? seatSel.value : "";
+            cardEl.classList.add("selected"); selectedTrain = train;
+            selectedSeat = cardEl.querySelector(".seat-select") ? cardEl.querySelector(".seat-select").value : "";
             checkCanReschedule();
         }
-
         function updateSelectedSeat(trainNo, seat) {
-            if(selectedTrain && selectedTrain.train_no === trainNo) {
-                selectedSeat = seat;
-                checkCanReschedule();
-            }
+            if(selectedTrain && selectedTrain.train_no === trainNo) { selectedSeat = seat; checkCanReschedule(); }
         }
-
         function checkCanReschedule() {
-            if(!selectedTrain || !selectedSeat) {
-                document.getElementById("rescheduleBtn").disabled = true;
-                document.getElementById("diffInfo").style.display = "none";
-                return;
-            }
-
-            const order = rescheduleInfo.order;
+            if(!selectedTrain || !selectedSeat) { document.getElementById("rescheduleBtn").disabled = true; document.getElementById("diffInfo").style.display = "none"; return; }
             let newPrice = selectedTrain.price * seatDiscounts[selectedSeat];
-            if(order.is_student === 'y') {
-                if((selectedTrain.type === "高铁" || selectedTrain.type === "动车") && selectedSeat === "二等座") newPrice *= 0.75;
-                else if(selectedTrain.type === "普速火车" && selectedSeat === "硬座") newPrice *= 0.5;
+            if(rescheduleInfo.order.is_student === 'y') {
+                if((selectedTrain.type==="高铁"||selectedTrain.type==="动车") && selectedSeat==="二等座") newPrice *= 0.75;
+                else if(selectedTrain.type==="普速火车" && selectedSeat==="硬座") newPrice *= 0.5;
             }
-            newPrice = Math.round(newPrice * 100) / 100;
-            const diff = Math.round((newPrice - order.price) * 100) / 100;
-
-            const diffEl = document.getElementById("diffInfo");
-            diffEl.style.display = "block";
+            newPrice = Math.round(newPrice*100)/100;
+            const diff = Math.round((newPrice - rescheduleInfo.order.price)*100)/100;
+            const diffEl = document.getElementById("diffInfo"); diffEl.style.display = "block";
             if(diff > 0) {
                 diffEl.className = "diff-info diff-up";
-                diffEl.innerHTML = `⚠️ 新票价 <b>¥${newPrice.toFixed(2)}</b>，需<b>补差价 ¥${diff.toFixed(2)}</b>（在线支付）`;
+                diffEl.innerHTML = '⚠️ 新票价 <b>¥'+newPrice.toFixed(2)+'</b>，需<b>补差价 ¥'+diff.toFixed(2)+'</b>（在线支付）';
                 document.getElementById("rescheduleBtn").disabled = false;
                 document.getElementById("rescheduleBtn").className = "btn btn-warning";
-                document.getElementById("rescheduleBtn").innerText = `确认改签 · 在线支付差价 ¥${diff.toFixed(2)}`;
+                document.getElementById("rescheduleBtn").innerText = '确认改签 · 在线支付差价 ¥'+diff.toFixed(2);
             } else if(diff < 0) {
                 diffEl.className = "diff-info diff-down";
-                diffEl.innerHTML = `✅ 新票价 <b>¥${newPrice.toFixed(2)}</b>，<b>退差价 ¥${Math.abs(diff).toFixed(2)}</b>；改签后自动退回`;
+                diffEl.innerHTML = '✅ 新票价 <b>¥'+newPrice.toFixed(2)+'</b>，<b>退差价 ¥'+Math.abs(diff).toFixed(2)+'</b>；改签后自动退回';
                 document.getElementById("rescheduleBtn").disabled = false;
                 document.getElementById("rescheduleBtn").className = "btn btn-primary";
-                document.getElementById("rescheduleBtn").innerText = `确认改签 · 退还 ¥${Math.abs(diff).toFixed(2)}`;
+                document.getElementById("rescheduleBtn").innerText = '确认改签 · 退还 ¥'+Math.abs(diff).toFixed(2);
             } else {
                 diffEl.className = "diff-info diff-same";
-                diffEl.innerHTML = `票价不变 <b>¥${newPrice.toFixed(2)}</b>，可直接改签`;
+                diffEl.innerHTML = '票价不变 <b>¥'+newPrice.toFixed(2)+'</b>，可直接改签';
                 document.getElementById("rescheduleBtn").disabled = false;
                 document.getElementById("rescheduleBtn").className = "btn btn-primary";
                 document.getElementById("rescheduleBtn").innerText = "确认改签";
             }
         }
-
         async function doReschedule() {
             if(!selectedTrain || !selectedSeat) return;
-            const btn = document.getElementById("rescheduleBtn");
-            btn.disabled = true;
-            btn.innerText = "处理中...";
-
-            const fd = new FormData();
-            fd.append("order_id", orderId);
-            fd.append("new_train_no", selectedTrain.train_no);
-            fd.append("new_seat_type", selectedSeat);
-
+            const btn = document.getElementById("rescheduleBtn"); btn.disabled = true; btn.innerText = "处理中...";
+            const fd = new FormData(); fd.append("order_id", orderId); fd.append("new_train_no", selectedTrain.train_no); fd.append("new_seat_type", selectedSeat);
             const res = await fetch("/reschedule", { method: "POST", body: fd });
             const data = await res.json();
-
             const resultBox = document.getElementById("resultBox");
-            document.getElementById("selectSection").style.display = "none";
-            resultBox.innerHTML = "";
-
+            document.getElementById("selectSection").style.display = "none"; resultBox.innerHTML = "";
             if(data.success) {
                 if(data.need_pay) {
-                    // 需要补差价
                     resultBox.className = "result-box pay";
-                    resultBox.innerHTML = `
-                        <h2 style="margin-bottom:12px;">💳 需补差价 ¥${data.price_diff.toFixed(2)}</h2>
-                        <p style="margin-bottom:5px;">新车次: <b>${selectedTrain.train_no.split('_')[0]}</b> · ${selectedSeat}</p>
-                        <p style="margin-bottom:5px;">新票价: ¥${data.new_price.toFixed(2)} | 原票价: ¥${data.old_price.toFixed(2)}</p>
-                        <p style="margin-bottom:15px;color:#888;">改签订单号: ${data.order_no}</p>
-                        <button class="btn btn-warning" onclick="payDiff('${data.order_no}')">在线支付差价 ¥${data.price_diff.toFixed(2)}</button>
-                        <button class="btn btn-primary" style="margin-left:10px;" onclick="location.href='/order_page'">返回订单</button>
-                    `;
+                    resultBox.innerHTML =
+                        '<h2 style="margin-bottom:12px;">💳 需补差价 ¥'+data.price_diff.toFixed(2)+'</h2>'+
+                        '<p style="margin-bottom:5px;">新车次: <b>'+selectedTrain.train_no.split('_')[0]+'</b> · '+selectedSeat+'</p>'+
+                        '<p style="margin-bottom:5px;">新票价: ¥'+data.new_price.toFixed(2)+' | 原票价: ¥'+data.old_price.toFixed(2)+'</p>'+
+                        '<p style="margin-bottom:15px;color:#888;">改签订单号: '+data.order_no+'</p>'+
+                        '<button class="btn btn-warning" onclick="payDiff(\''+data.order_no+'\', \''+data.price_diff.toFixed(2)+'\')">在线支付差价 ¥'+data.price_diff.toFixed(2)+'</button>'+
+                        '<button class="btn btn-primary" style="margin-left:10px;" onclick="location.href=\'/order_page\'">返回订单</button>';
                 } else {
-                    // 改签成功（退差或同价）
                     resultBox.className = "result-box success";
-                    resultBox.innerHTML = `
-                        <h2 style="margin-bottom:12px;">✅ ${data.msg}</h2>
-                        <p>新车次: <b>${selectedTrain.train_no.split('_')[0]}</b> · ${selectedSeat}</p>
-                        <p>新票价: ¥${data.new_price.toFixed(2)} | 原票价: ¥${data.old_price.toFixed(2)}</p>
-                        ${data.price_diff < 0 ? `<p style="color:#52c41a;">退还差价: ¥${Math.abs(data.price_diff).toFixed(2)}</p>` : ''}
-                        <button class="btn btn-primary" style="margin-top:15px;" onclick="location.href='/order_page'">查看订单</button>
-                    `;
+                    resultBox.innerHTML =
+                        '<h2 style="margin-bottom:12px;">✅ '+data.msg+'</h2>'+
+                        '<p>新车次: <b>'+selectedTrain.train_no.split('_')[0]+'</b> · '+selectedSeat+'</p>'+
+                        '<p>新票价: ¥'+data.new_price.toFixed(2)+' | 原票价: ¥'+data.old_price.toFixed(2)+'</p>'+
+                        (data.price_diff < 0 ? '<p style="color:#52c41a;">退还差价: ¥'+Math.abs(data.price_diff).toFixed(2)+'</p>' : '')+
+                        '<button class="btn btn-primary" style="margin-top:15px;" onclick="location.href=\'/order_page\'">查看订单</button>';
                 }
             } else {
                 resultBox.className = "result-box pay";
-                resultBox.innerHTML = `<h2>❌ ${data.msg}</h2>
-                    <button class="btn btn-primary" style="margin-top:10px;" onclick="location.reload()">重新选择</button>`;
+                resultBox.innerHTML = '<h2>❌ '+data.msg+'</h2><button class="btn btn-primary" style="margin-top:10px;" onclick="location.reload()">重新选择</button>';
             }
         }
-
-        function payDiff(orderNo) {
-            location.href = `/pay_page?order_no=${orderNo}&is_reschedule=1`;
+        function payDiff(orderNo, price) {
+            location.href = "/pay_page?order_no="+orderNo+"&is_reschedule=1&price="+price;
         }
-
         window.onload = loadInfo;
     </script>
 </body>

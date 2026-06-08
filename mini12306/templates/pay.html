@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="box">
-        <div class="title">💳 模拟在线支付</div>
+        <div class="title" id="pageTitle">💳 模拟在线支付</div>
         <div class="info-row">
             <span class="info-label">订单号</span>
             <span class="info-value" id="orderNo">-</span>
@@ -53,8 +53,13 @@
         const params = new URLSearchParams(location.search);
         const orderNo = params.get("order_no") || "-";
         const price = params.get("price") || "0";
+        const isReschedule = params.get("is_reschedule") === "1";  // 是否改签补差价支付
+
         document.getElementById("orderNo").innerText = orderNo;
         document.getElementById("price").innerText = parseFloat(price).toFixed(2);
+        if (isReschedule) {
+            document.getElementById("pageTitle").innerText = "💳 改签差价支付";
+        }
 
         async function doPay() {
             const btn = document.getElementById("payBtn");
@@ -64,22 +69,25 @@
             const fd = new FormData();
             fd.append("order_no", orderNo);
 
+            // 【修复2】改签差价支付走 /pay_reschedule 接口，普通购票走 /pay 接口
+            const payUrl = isReschedule ? "/pay_reschedule" : "/pay";
+
             try {
-                const res = await fetch("/pay", { method: "POST", body: fd });
+                const res = await fetch(payUrl, { method: "POST", body: fd });
                 const text = await res.text();
                 const resultDiv = document.getElementById("result");
-
                 resultDiv.className = "result";
-                if(text === "支付成功") {
+
+                if (text === "支付成功" || text === "支付成功，改签完成") {
                     resultDiv.classList.add("success");
-                    resultDiv.innerText = "✅ 支付成功！车票已出票";
+                    resultDiv.innerText = isReschedule ? "✅ 差价支付成功！改签已完成" : "✅ 支付成功！车票已出票";
                     btn.style.display = "none";
-                } else if(text === "支付失败") {
+                } else if (text === "支付失败") {
                     resultDiv.classList.add("fail");
                     resultDiv.innerText = "❌ 支付失败，请重试";
                     btn.disabled = false;
                     btn.innerText = "重新支付";
-                } else if(text === "支付超时") {
+                } else if (text === "支付超时") {
                     resultDiv.classList.add("timeout");
                     resultDiv.innerText = "⏱️ 支付超时，请重试";
                     btn.disabled = false;
