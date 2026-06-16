@@ -127,10 +127,6 @@ def init_db():
                       (tno, train["start"], train["end"], train["depart_time"], train["arrive_time"],
                        train["price"], json.dumps(train["seat_types"]), train["total_tickets"],
                        train["total_tickets"], train["type"], ds))
-    c.execute("INSERT OR IGNORE INTO passengers (username,passenger_name,idcard,phone) VALUES (?,?,?,?)",
-              ("testuser", "张三", "320106199508152234", "13912345678"))
-    c.execute("INSERT OR IGNORE INTO passengers (username,passenger_name,idcard,phone) VALUES (?,?,?,?)",
-              ("testuser", "李四", "110101199502150019", "13600001111"))
     conn.commit(); conn.close()
 
 # ======================== 工具函数 ========================
@@ -346,7 +342,7 @@ def get_dates():
     dates = []
     for i in range(15):
         d = today + timedelta(days=i)
-        dates.append({"value": d.strftime("%Y-%m-%d"), "label": f"{d.month}月{d.day}日 {week[d.weekday()]}"})
+        dates.append({"value": d.strftime("%Y-%m-%d"), "label": f"{d.month}月{d.day}日"})
     return jsonify(dates)
 
 # ======================== 购票 ========================
@@ -543,6 +539,20 @@ def reschedule():
 
     # 获取原车次信息
     c.execute("SELECT * FROM trains WHERE train_no=?", (order["train_no"],)); old_train = c.fetchone()
+
+    # 原车次已发车不可改签
+    try:
+        old_depart = datetime.strptime(old_train["travel_date"] + " " + old_train["depart_time"], "%Y-%m-%d %H:%M")
+        if old_depart <= datetime.now():
+            conn.close(); return jsonify({"success": False, "msg": "原车次已发车，无法改签"})
+    except: pass
+
+    # 新车次已发车不可改为目标
+    try:
+        new_depart = datetime.strptime(new_train["travel_date"] + " " + new_train["depart_time"], "%Y-%m-%d %H:%M")
+        if new_depart <= datetime.now():
+            conn.close(); return jsonify({"success": False, "msg": "目标车次已发车，无法改签"})
+    except: pass
 
     # 【修复1-B】飞机与其他交通工具不互通：飞机只能改飞机，其他只能改其他
     old_is_plane = (old_train["type"] == "飞机")
